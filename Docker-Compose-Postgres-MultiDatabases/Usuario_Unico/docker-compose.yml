@@ -1,0 +1,29 @@
+name: Servidro_DB
+services:
+ Server-db:
+    image: postgres:16
+    restart: always
+    container_name: server-db_unico
+    ports:
+        - 5432:5432
+    environment:    
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_MULTIPLE_DATABASES: ${POSTGRES_MULTIPLE_DATABASES}
+    volumes:
+        - postgres-data:/var/lib/postgresql/data        
+        - ./init/init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
+        - ./init/01-CriaEstrutura.sql:/docker-entrypoint-initdb.d/01-CriaEstrutura.sql
+        - ./init/02-PopulaDados.sql:/docker-entrypoint-initdb.d/02-PopulaDados.sql
+    healthcheck:
+      test: 
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 1s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres-data:
+     name: server-db_Unico_postgres_data
+#   postgres-data:
