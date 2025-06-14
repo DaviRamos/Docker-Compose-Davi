@@ -1,0 +1,53 @@
+services:
+  
+  postgres-service:
+    image: postgres:17.2
+    restart: always
+    container_name: postgres-container
+    environment:        
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}     
+      POSTGRES_HOST: postgresHost
+      POSTGRES_PORT: 5432 
+      # 0 - EMERGENCY
+      # 1 - ALERT
+      # 2 - CRITICAL
+      # 3 - ERROR
+      # 4 - WARNING
+      # 5 - NOTICE
+      # 6 - INFO
+      # 7 - DEBUG
+      POSTGRES_LOG_LEVEL: 4
+    volumes:
+      - postgres-data:/var/lib/postgresql/data    
+      - ./init/01-CriaEstrutura.sql:/docker-entrypoint-initdb.d/01-CriaEstrutura.sql
+      - ./init/02-PopulaDados.sql:/docker-entrypoint-initdb.d/02-PopulaDados.sql 
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'admin', '-d', 'admin']      
+      interval: 50s
+      timeout: 5s
+      retries: 15
+      start_period: 2m
+    ports:
+      - 5437:5432
+    networks:
+      - local_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
+
+networks:
+  local_network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+     name: postgres-container_data
+#   postgres-data:

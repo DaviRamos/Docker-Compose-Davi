@@ -1,0 +1,101 @@
+name: Infra-Projetos
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  postgres-data:
+    name: postgres-service_data
+  pgadmin-service:
+    name: pgadmin-service_data
+  pgadmin-storage-service:
+    name: pgadmin-storage-service_data
+
+services:
+  postgres-service:
+    image: postgres:17.2
+    restart: always
+    container_name: postgres-container
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgresHost
+      POSTGRES_PORT: 5432
+      # 0 - EMERGENCY
+      # 1 - ALERT
+      # 2 - CRITICAL
+      # 3 - ERROR
+      # 4 - WARNING
+      # 5 - NOTICE
+      # 6 - INFO
+      # 7 - DEBUG
+      POSTGRES_LOG_LEVEL: 4
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./01-CriaDatabase_LitellmDB.sql:/docker-entrypoint-initdb.d/01-CriaDatabase_LitellmDB.sql
+      - ./02-CriaDatabase_openwebui.sql:/docker-entrypoint-initdb.d/02-CriaDatabase_openwebui.sql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 50s
+      timeout: 5s
+      retries: 15
+      start_period: 2m
+    ports:
+        - 5437:5432
+    networks:
+      - local-network 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
+
+  pgadmin-service:
+    container_name: pgadmin-container
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
+      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
+      PGADMIN_CONFIG_SERVER_NAME: ${PGADMIN_CONFIG_SERVER_NAME}
+      PGADMIN_CONFIG_ENABLE_CSRF_PROTECTION: ${PGADMIN_CONFIG_ENABLE_CSRF_PROTECTION}
+      PGADMIN_CONFIG_FILE_LOG_LEVEL: ${PGADMIN_CONFIG_FILE_LOG_LEVEL} 
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: ${PGADMIN_CONFIG_CONSOLE_LOG_LEVEL}   
+    ports:
+      - 15437:15432
+      - 877:80
+    networks:
+      - local-network
+    volumes:
+        - pgadmin-service:/var/lib/pgadmin
+        - pgadmin-storage-service:/var/lib/pgadmin4/storage                      
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ 'CMD', 'wget', '-O', '-', 'http://localhost:80/misc/ping' ]
+      interval: 50s
+      timeout: 3s
+      retries: 10
+      start_period: 1m
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    cpuset: '1'
+
