@@ -1,4 +1,4 @@
-name: postgresspgadmin    
+name: postgress+pgadmin    
 
 networks:
   local-network:

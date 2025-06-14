@@ -1,4 +1,4 @@
-name: postgresspgadmin   
+name: Grafana   
 networks:
   local-network:
         external: true
