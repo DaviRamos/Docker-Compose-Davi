@@ -1,0 +1,52 @@
+services:
+  mongodb:
+    image: mongo:latest
+    restart: always
+    container_name: mongodb-container
+    networks:
+      - mongo-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_CONNECTION_STRING: ${MONGO_CONNECTION_STRING}
+      MONGO_REPLICA_SET_NAME: ${MONGO_REPLICA_SET_NAME}
+      MONGO_REPLICA_SET_CONFIG: ${MONGO_REPLICA_SET_CONFIG}
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    container_name: mongo-express-container
+    depends_on:
+      - mongodb
+    networks:
+      - mongo-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 30s 
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${ME_CONFIG_MONGODB_ADMINUSERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${ME_CONFIG_MONGODB_ADMINPASSWORD}
+      ME_CONFIG_MONGODB_URL: ${ME_CONFIG_MONGODB_URL}
+      ME_CONFIG_BASICAUTH: ${ME_CONFIG_BASICAUTH}
+  
+networks:
+  mongo-network:
+    driver: bridge
+volumes:
+  mongodb_data:

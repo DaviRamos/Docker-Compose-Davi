@@ -11,9 +11,9 @@ volumes:
     
 services:
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:latest
     restart: always
-    container_name: postgres-container
+    container_name: grafana-container
     ports:
       - "3000:3000"
     volumes:

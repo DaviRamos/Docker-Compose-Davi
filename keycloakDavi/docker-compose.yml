@@ -1,24 +1,57 @@
+name: keycloakDavi
+    
+networks:
+  local-network:
+        external: true
+
+volumes:
+  postgres-data:
+    name: postgres-service_data
+
 services:
-  KC_db: # Example. Remove before using.
+   postgres-service: # Example. Remove before using.
     image: postgres:latest
+    restart: always
+    container_name: PostgresKC-container
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT} 
+      POSTGRES_LOG_LEVEL: ${POSTGRES_LOG_LEVEL}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 50s
+      timeout: 5s
+      retries: 15
+      start_period: 2m
     ports:
-      - "5432:5432"
+        - 5437:5432
     networks:
-      - local_network
-  keycloak:
+      - local-network 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
+
+keycloak:
     image: quay.io/keycloak/keycloak:24.0
     environment:
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 7080
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HEALTH_ENABLED: "true"
-      KC_LOG_LEVEL: info
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-service:5432/keycloakdb
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
       interval: 15s
@@ -30,8 +63,81 @@ services:
     ports:
       - "7080:7080"
       - "7443:7443"
+
+keycloak-service:
+    container_name: keycloak-container
+    image: quay.io/keycloak/keycloak:26.0.8
+    environment:   
+      # General Configuration
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      #KEYCLOAK_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
+      KEYCLOAK_HTTP_ENABLED: ${KEYCLOAK_HTTP_ENABLED} #PRD false
+      KEYCLOAK_HEALTH_ENABLED: ${KEYCLOAK_HEALTH_ENABLED} #PRD false
+      KEYCLOAK_METRICS_ENABLED: ${KEYCLOAK_METRICS_ENABLED} #PRD false
+      KEYCLOAK_HTTP_METRICS_HISTOGRAMS_ENABLED: ${KEYCLOAK_HTTP_METRICS_HISTOGRAMS_ENABLED} #PRD false
+      KEYCLOAK_CACHE_METRICS_HISTOGRAMS_ENABLED: ${KEYCLOAK_CACHE_METRICS_HISTOGRAMS_ENABLED} #PRD false
+      KEYCLOAK_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL} # PRD INFO
+      # Database Configuration
+      KEYCLOAK_DB: ${KEYCLOAK_DB} # postgres
+      #KEYCLOAK_DB_SCHEMA: keycloak
+      KEYCLOAK_DB_URL_HOST: ${KEYCLOAK_DB_URL_HOST} # postgresHost
+      KEYCLOAK_DB_URL_PORT: ${KEYCLOAK_DB_URL_PORT} # 5432
+      KEYCLOAK_DB_NAME: ${KEYCLOAK_DB_NAME} # keycloakdb
+      KEYCLOAK_DB_URL: ${KEYCLOAK_DB_URL} # jdbc:postgresql://postgres-container:5432/keycloakdb
+      KEYCLOAK_DB_USERNAME: ${POSTGRES_USER}
+      KEYCLOAK_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # General Configuration
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KEYCLOAK_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
+      KEYCLOAK_HTTP_ENABLED: 'true' #PRD false
+      KEYCLOAK_HEALTH_ENABLED: 'true' #PRD false      
+      KEYCLOAK_METRICS_ENABLED: 'true'
+      KEYCLOAK_HTTP_METRICS_HISTOGRAMS_ENABLED: 'true'   
+      KC_LOG_CONSOLE_COLOR: 'true'
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
+      KC_HTTP_ENABLED: 'true' #PRD false
+      KC_HEALTH_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KC_HTTP_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_CACHE_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_LOG_LEVEL: INFO # DEBUG
+      # DB Configuration
+      KC_DB: postgres
+      #KC_DB_SCHEMA: keycloak
+      KC_DB_URL_HOST: postgresHost
+      KC_DB_URL_PORT: 5432
+      KC_DB_NAME: keycloakdb
+      KC_DB_URL: jdbc:postgresql://postgres-container:5432/keycloakdb
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    command: ['start-dev', '--http-port', '8080']
+    ports:
+      - 8087:8080
+      - 7447:7443
+      - 9007:9000
     networks:
       - local_network
-networks:
-  local_network:
-    driver: bridge
+    deploy:
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 512M
+        reservations:
+          cpus: '0.30'
+          memory: 128M
+    cpuset: '1'
