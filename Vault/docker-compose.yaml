@@ -1,32 +1,74 @@
+name: Vault-Service   
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  postgres-vault-service_Data:
+    name: postgres_data 
+  vault-Log-service_Data:
+    name: vault-Log_data
+  vault-File-service_Data:
+    name: vault-File_data
+  vault-service_Data:
+      name: vault_data    
+  vault-config-service_Data:
+    name: vault_config_data
+  vault-certs-service_Data:
+    name: vault_certs_data
+
 services:
-  database:
-    image: postgres:17
-    container_name: postgresql
-    ports:
-      - 5432:5432
+  postgres-vault-service:
+    image: postgres:17.2
     restart: always
+    container_name: postgres-container    
     environment:
-      POSTGRES_USER: vault
-      POSTGRES_PASSWORD: strongpassword
-      POSTGRES_DB: vault
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "vault"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_LOG_LEVEL: ${POSTGRES_LOG_LEVEL}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-vault-service_Data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-  vault:
-    image: hashicorp/vault:1.18
-    container_name: vault
-    restart: always
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 50s
+      timeout: 5s
+      retries: 15
+      start_period: 2m
     ports:
-      - 8200:8200
+        - 5432:5432
+    networks:
+      - local-network 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
+
+  vault-service:
+    image: hashicorp/vault:latest  
+    restart: always
+    container_name: vault-container  
     environment:
       VAULT_ADDR: "http://0.0.0.0:8200" # Environment variable to access Vault
     volumes:
       - ./vault.hcl:/vault/config/vault.hcl:ro # Mount your Vault configuration file
+      - vault-Log-service_Data:/vault/logs # Mount a volume for Vault logs
+      - vault-File-service_Data:/vault/file # Mount a volume for Vault files
+      - vault-service_Data:/vault/data/   
+      - vault-config-service_Data:/vault/config/    
+      - vault-certs-service_Data:/certs/ # Mount certificates for TLS  
     entrypoint: >
       vault server -config=/vault/config/vault.hcl
     cap_add:
@@ -36,8 +78,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+    ports:
+        - 8200:8200
+    networks:
+      - local-network 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
     depends_on:
-      - database
-volumes:
-  postgres_data:
+      postgres-vault-service:
+        condition: service_healthy
