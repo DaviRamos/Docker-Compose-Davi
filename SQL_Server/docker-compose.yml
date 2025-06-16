@@ -1,4 +1,8 @@
-version: '3'
+name: SqlServer-Service   
+
+networks:
+  local-network:
+    external: true
 
 volumes:
   sqlvol:
@@ -6,15 +10,92 @@ volumes:
 
 services:
   sql:
-    image: "mcr.microsoft.com/mssql/server:2017-latest"
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: sql-container
+    restart: always
+    environment:      
+      SA_PASSWORD: "SqlServer@123"
+      ACCEPT_EULA: "Y" 
+      MSSQL_PID: "Developer"
+      MSSQL_AGENT_ENABLED: "true"
+      MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS" 
+   
+    command: /opt/mssql/bin/sqlservr
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    init: true
     volumes: 
       - sqlvol:/var/opt/mssql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./config:/var/opt/mssql/config
+      - ./logs:/var/opt/mssql/logs
+      - ./data:/var/opt/mssql/data
+      - ./secrets:/var/opt/mssql/secrets  
+      - ./scripts:/var/opt/mssql/scripts
+      - ./certs:/var/opt/mssql/certs
+      - ./keys:/var/opt/mssql/keys  
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
+      # Uncomment the following line if you want to use a custom initialization script
+      # volumes:
+      #   - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Uncomment the following line if you want to use a custom certificate
+      # volumes:
+      #   - ./certs:/var/opt/mssql/certs:ro
+      # Uncomment the following line if you want to use a custom key
+      # volumes:
+      #   - ./keys:/var/opt/mssql/keys:ro
+      # Uncomment the following line if you want to use a custom data directory
+      # volumes:
+      #   - ./data:/var/opt/mssql/data:rw
+      # Uncomment the following line if you want to use a custom log directory
+      # volumes:
+      #   - ./logs:/var/opt/mssql/log:rw
+      # Uncomment the following line if you want to use a custom backup directory
+      # volumes:
+      #   - ./backups:/var/opt/mssql/backups:rw
+      # Uncomment the following line if you want to use a custom tempdb directory
+      # volumes:
+      #   - ./tempdb:/var/opt/mssql/tempdb:rw
+      # Uncomment the following line if you want to use a custom secrets directory
+      # volumes:
+      #   - ./secrets:/var/opt/mssql/secrets:ro
+      # Uncomment the following line if you want to use a custom scripts directory
+      # volumes:
+      #   - ./scripts:/var/opt/mssql/scripts:ro
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
     ports:
       - "1433:1433"
       - "1434:1434"
       - "443:443"
-    environment:      
-      SA_PASSWORD: "SqlServer@123"
-      ACCEPT_EULA: "Y"   
+    networks:
+     - local-network    
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-S", "localhost", "-U", "sa", "-P", "SqlServer@123", "-Q", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 2G
+        reservations:
+          cpus: '0.50'
+          memory: 1G
+    cpuset: '0,1'
+    # Uncomment the following line if you want to set a specific CPU core for the container
+    # cpuset: '0'
+    # Uncomment the following line if you want to set a specific memory limit for the container
+    # mem_limit: 2g
+    # Uncomment the following line if you want to set a specific CPU limit for the container
+    # cpu_limit: 1.0
 
 

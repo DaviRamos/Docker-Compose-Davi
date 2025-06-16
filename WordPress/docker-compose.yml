@@ -179,3 +179,11 @@ services:
           cpus: '0.25'
           memory: 128M
     cpuset: '1'
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+    - 8082:80
+    environment:
+      - PMA_ARBITRARY=1 
