@@ -1,0 +1,11 @@
+The following are the supported logging levels and what each entails.
+
+Log Level (Numeric)	Log Level	Operation	Verbosity Level
+1	None	Logging Disabled	0
+2	Internal	Internal Error	1
+3	Error	Error	1
+4	Warning	Warning	1
+5	Info	Informational	1
+6	Debug	Debug	2
+7	Debug2	Debug2	3
+8	Debug3	Debug3	4

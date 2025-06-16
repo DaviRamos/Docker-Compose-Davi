@@ -5,15 +5,22 @@ networks:
     external: true
 
 volumes:
-  db_blog:
-    name: db_blog_data
- 
+  mariadb-data:
+    name: mariadb_data
+  mariadb-logs:
+    name: mariadb_logs
+  wordpress-data:
+    name: wordpress_data
+  wordpress-logs:
+    name: wordpress_logs
+  wordpress_vol_data:
+    name: wordpress_vol_data
   wordpress_vol:
     name: wordpress_vol_data
 
 services:
   dbblog-service:
-    image: mariadb:10.3.8
+    image: mariadb:latest
     container_name: dbblog-container
     restart: always 
     environment:
@@ -21,11 +28,14 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      MYSQL_LOG_LEVEL: ${MYSQL_LOG_LEVEL}
-      MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLATION: utf8mb4_unicode_ci
+      MYSQL_HOST: ${MYSQL_HOST:-localhost}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_LOG_LEVEL: ${MYSQL_LOG_LEVEL:-2}
+      MYSQL_LOG_ERROR_VERBOSITY: ${MYSQL_LOG_ERROR_VERBOSITY:-2}
+      MYSQL_GENERAL_LOG: ${MYSQL_GENERAL_LOG:-1}
+      MYSQL_GENERAL_LOG_FILE: ${MYSQL_GENERAL_LOG_FILE:-/var/log/mariadb/general.log}
+      MYSQL_CHARSET: ${MYSQL_CHARSET:-utf8mb4}
+      MYSQL_COLLATION: ${MYSQL_COLLATION:-utf8mb4_unicode_ci}  
       MYSQL_INITDB_SKIP_TZINFO: "yes"
       MYSQL_INITDB_SKIP_DB_CREATION: "no"
       MYSQL_INITDB_SKIP_LOGGING: "no"
@@ -68,7 +78,8 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - db_blog:/var/lib/mysql 
+      - mariadb-data:/var/lib/mysql       
+      - mariadb-logs:/var/log/mariadb
       #- ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       #- ./my.cnf:/etc/mysql/conf.d/my.cnf:ro      
     ports:
@@ -125,7 +136,27 @@ services:
         define('WP_REDIS_DISABLED', false);
         define('WP_REDIS_HOST', 'redis'); 
     volumes:
-     - wordpress_vol:/var/www/html
+     - wordpress-data:/var/www/html
+     - wordpress-logs:/var/log/wordpress
+     - wordpress_vol:/var/www/html/wp-content/uploads
+    # Uncomment the next line to use a custom configuration file
+    # - ./wp-config.php:/var/www/html/wp-config.php:ro
+    # Uncomment the next line to use a custom theme
+    # - ./wp-content/themes/my-theme:/var/www/html/wp-content/themes/my-theme:ro
+    # Uncomment the next line to use a custom plugin
+    # - ./wp-content/plugins/my-plugin:/var/www/html/wp-content/plugins/my-plugin:ro
+    # Uncomment the next line to use a custom mu-plugin
+    # - ./wp-content/mu-plugins/my-mu-plugin:/var/www/html/wp-content/mu-plugins/my-mu-plugin:ro
+    # Uncomment the next line to use a custom upload directory
+    # - ./wp-content/uploads:/var/www/html/wp-content/uploads:rw
+    # Uncomment the next line to use a custom cache directory
+    # - ./wp-content/cache:/var/www/html/wp-content/cache:rw
+    # Uncomment the next line to use a custom object cache directory
+    # - ./wp-content/object-cache:/var/www/html/wp-content/object-cache:rw
+    # Uncomment the next line to use a custom database backup directory
+    # - ./wp-content/db-backups:/var/www/html/wp-content/db-backups:rw
+    # Uncomment the next line to use a custom log directory
+    # - ./wp-content/logs:/var/www/html/wp-content/logs:rw    
     ports:
      - "8080:80"
     networks:
