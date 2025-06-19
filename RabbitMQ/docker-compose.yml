@@ -1,13 +1,72 @@
-version: '3'
+name: RabbitMQ-Service   
+
+networks:
+  local-network:
+    external: true
+volumes:
+  rabbitmq_data:
+    name: rabbitmq_data
 
 services:
   rabbitmq:
-    container_name: RabbitMQ
-    image: bitnami/rabbitmq
+    image: bitnami/rabbitmq:latest
+    # Use the Bitnami RabbitMQ image
+    # This image is optimized for production use
+    # and includes the RabbitMQ management plugin
+    # for easy management via a web interface
+    # The management plugin is accessible at port 15672
+    # The default user is 'user' with password 'bitnami'   
+    container_name: "RabbitMQ_container"
+    restart: always
     ports:
       - "15672:15672"
       - "5672:5672" 
       - "61613:61613" 
+      - "25672:25672"
+    networks:
+      - local-network 
     environment:
-      RABBITMQ_DEFAULT_USER: RabbitUser
-      RABBITMQ_DEFAULT_PASS: RabbitPWD
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS} 
+      #RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST} 
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_SSL_ENABLED: ${RABBITMQ_SSL_ENABLED}
+      RABBITMQ_MANAGEMENT_ENABLED: ${RABBITMQ_MANAGEMENT_ENABLED}
+      RABBITMQ_MANAGEMENT_PORT: ${RABBITMQ_MANAGEMENT_PORT}
+      RABBITMQ_MANAGEMENT_SSL_ENABLED: ${RABBITMQ_MANAGEMENT_SSL_ENABLED}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      # Environment variables for RabbitMQ configuration
+      # These variables can be set in a .env file or directly in the environment
+      # The default user is 'user' with password 'bitnami'
+      # The default virtual host is '/'
+      # The RabbitMQ host is 'localhost' and port is '5672'
+      # SSL is disabled by default
+      # Management plugin is enabled by default  
+    volumes:
+      - rabbitmq_data:/bitnami/rabbitmq      
+      # Uncomment the next line to use a custom configuration file
+      # - /path/to/local/rabbitmq.conf:/opt/bitnami/rabbitmq/conf/rabbitmq.conf
+    # Uncomment the next line to use a custom enabled plugins file
+    # - /path/to/local/enabled_plugins:/opt/bitnami/rabbitmq/conf/enabled_plugins
+    # Uncomment the next line to use a custom advanced configuration file
+    # - /path/to/local/advanced.config:/opt/bitnami/rabbitmq/conf/advanced.config
+    # Uncomment the next line to use a custom definitions file  
+    # - /path/to/local/definitions.json:/opt/bitnami/rabbitmq/conf/definitions.json 
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5  
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
+
+
+   
