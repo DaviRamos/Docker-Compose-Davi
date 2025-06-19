@@ -1,10 +1,22 @@
+name: mongo-Service   
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  mongodb_data:
+    name: mongodb_data
+  mongo-express_data:
+    name: mongo-express_data  
+
 services:
   mongodb:
     image: mongo:latest
     restart: always
     container_name: mongodb-container
     networks:
-      - mongo-network
+      - local-network
     healthcheck:
       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 1m30s
@@ -30,7 +42,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - mongo-network
+      - local-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/"]
       interval: 1m
@@ -45,8 +57,3 @@ services:
       ME_CONFIG_MONGODB_URL: ${ME_CONFIG_MONGODB_URL}
       ME_CONFIG_BASICAUTH: ${ME_CONFIG_BASICAUTH}
   
-networks:
-  mongo-network:
-    driver: bridge
-volumes:
-  mongodb_data:
