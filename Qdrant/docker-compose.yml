@@ -1,38 +1,107 @@
-name: projeto qdrant
-services:
-  qdrant-service:
-    image: qdrant/qdrant:latest
-    restart: always
-    container_name: qdrant-container
-    healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
-          interval: 10s
-          timeout: 2s
-          retries: 5
-    ports:
-      - 6333:6333
-      - 6334:6334
-    expose:
-      - 6333
-      - 6334
-      - 6335
-    configs:
-      - source: qdrant-service_config
-        target: /qdrant/config/production.yaml
-    volumes:
-      - qdrant_data:/qdrant/storage
-
+name: Qdrant-service
 
 networks:
-  local_network:
-    driver: bridge
+  local-network:
+    external: true
 
 volumes:
   qdrant_data:
     name: qdrant-service_data
 
+services:
+  qdrant-service:
+    image: qdrant/qdrant:gpu-nvidia-latest
+    restart: unless-stopped # Restarts the container unless it's explicitly stopped
+    container_name: qdrant-container
+    hostname: qdrant-service
+   # command: ["qdrant", "start", "--config", "/qdrant/config/production.yaml"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - 6333:6333 # Qdrant API port
+      - 6334:6334 # Qdrant gRPC port
+      # Uncomment the following lines if you want to enable TLS
+      #- 6335:6335 # Qdrant TLS port
+      #- 6336:6336 # Qdrant TLS gRPC port
+      #- 6337:6337 # Qdrant TLS API port
+      #- 6338:6338 # Qdrant TLS gRPC port
+      #- 6339:6339 # Qdrant TLS API port
+    networks:
+      - local-network 
+    environment:
+      # Optional: Configure Qdrant GPU settings within the container
+      # QDRANT__GPU__INDEXING: "true"
+      # QDRANT__GPU__FORCE_HALF_PRECISION: "false"
+      # QDRANT__GPU__GROUPS_COUNT: "512"
+      - QDRANT__GPU__DEVICE_FILTER=nvidia
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT__SERVICE__ENABLE_TLS}
+      - QDRANT__SERVICE__HOST=${QDRANT__SERVICE__HOST}
+      - QDRANT__SERVICE__PORT=${QDRANT__SERVICE__PORT}
+      - QDRANT__SERVICE__GRPC_PORT=${QDRANT__SERVICE__GRPC_PORT}
+      - QDRANT__SERVICE__HTTP_PORT=${QDRANT__SERVICE__HTTP_PORT}
+      - QDRANT__STORAGE__PATH=${QDRANT__STORAGE__PATH}
+      # Uncomment the following lines if you want to enable TLS
+      # environment:
+      #- QDRANT__SERVICE__ENABLE_TLS=true
+      #- QDRANT__SERVICE__TLS_CERT_FILE=/qdrant/certs/cert.pem
+      #- QDRANT__SERVICE__TLS_KEY_FILE=/qdrant/certs/key.pem
+      #- QDRANT__SERVICE__TLS_CA_FILE=/qdrant/certs/ca.pem
+      #- QDRANT__SERVICE__TLS_VERIFY_CLIENT=false
+      #- QDRANT__SERVICE__TLS_VERIFY_DEPTH=1
+      #- QDRANT__SERVICE__TLS_CIPHERS=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+      #- QDRANT__SERVICE__TLS_CIPHERSUITES=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES
+      #- QDRANT__SERVICE__TLS_MIN_VERSION=TLS1.2
+      #- QDRANT__SERVICE__TLS_MAX_VERSION=TLS1.3
+      # Optional: Configure Qdrant storage settings within the container
+      # Uncomment the following lines to set storage limits
+      #- QDRANT__STORAGE__HARD_MAX_SIZE_ENABLED=true  
+      #- QDRANT__STORAGE__HARD_MAX_SIZE=10000000000 # 10 GB
+      #- QDRANT__STORAGE__HARD_MAX_SIZE_ENABLED=true
+      #- QDRANT__STORAGE__SOFT_MAX_SIZE=5000000000 # 5 GB
+      #- QDRANT__STORAGE__SOFT_MAX_SIZE_ENABLED=true
+      #- QDRANT__STORAGE__MAX_SEGMENT_SIZE=1000000000 # 1 GB
+      #- QDRANT__STORAGE__MAX_SEGMENTS_COUNT=1000 # 1000 segments
+      #- QDRANT__STORAGE__MAX_VECTOR_SIZE=1000 # 1000 dimensions
+      #- QDRANT__STORAGE__MAX_VECTOR_COUNT=1000000 # 1 million vectors
+      #- QDRANT__STORAGE__MAX_SHARD_COUNT=10 # 10 shards
+      #- QDRANT__STORAGE__MAX_SHARD_SIZE=1000000000 # 1 GB per shard
+      #- QDRANT__STORAGE__MAX_SHARD_SEGMENTS=100 # 100 segments per shard
+      #- QDRANT__STORAGE__MAX_SHARD_VECTOR_COUNT=100000 # 100k vectors per shard
+      #- QDRANT__STORAGE__MAX_SHARD_VECTOR_SIZE=1000 # 1000 dimensions per shard
+      #- QDRANT__STORAGE__MAX_SHARD_SEGMENT_SIZE=100000000 # 100 MB per segment
+      #- QDRANT__STORAGE__MAX_SHARD_SEGMENT_COUNT=100 # 100 segments per shard
+      #- QDRANT__STORAGE__MAX_SHARD_SEGMENT_VECTOR_COUNT=10000 # 10k
+    #configs:
+      #- source: qdrant-service_config
+       # target: /qdrant/config/production.yaml
+    healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+          interval: 10s
+          timeout: 2s
+          retries: 5
+          start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+          cpus: '0.25'
+          memory: 256M  
+    cpuset: '1'
 
-configs:
-  qdrant-service_config:
-    content: |
-      log_level: INFO
+
+#configs:
+ # qdrant-service_config:
+ #   content: |
+ #     log_level: INFO
