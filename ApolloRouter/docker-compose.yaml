@@ -1,0 +1,14 @@
+name: Apollo-Service   
+
+networks:
+  local-network:
+    external: true
+
+services:
+  apollo-router:
+    image: ghcr.io/apollographql/router:<router-image-version>
+    ports:
+      - "4000:4000"
+    environment:
+      APOLLO_GRAPH_REF: "<your-graph-ref>"
+      APOLLO_KEY: "<your-graph-api-key>"
