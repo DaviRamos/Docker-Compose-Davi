@@ -1,22 +1,95 @@
-version: '3.3'
+name: MariadbPhpMyAdmin-Service   
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  mariadb-data:
+    name: mariadb_data
+  mariadb-logs:
+    name: mariadb_logs
 
 services:
-   mariadb:
-    image: mariadb  
+  mariadb-service:
+    image: mariadb:latest
+    container_name: mariadb-container
+    restart: always 
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST:-localhost}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_LOG_LEVEL: ${MYSQL_LOG_LEVEL:-2}
+      MYSQL_LOG_ERROR_VERBOSITY: ${MYSQL_LOG_ERROR_VERBOSITY:-2}
+      MYSQL_GENERAL_LOG: ${MYSQL_GENERAL_LOG:-1}
+      MYSQL_GENERAL_LOG_FILE: ${MYSQL_GENERAL_LOG_FILE:-/var/log/mariadb/general.log}
+      MYSQL_CHARSET: ${MYSQL_CHARSET:-utf8mb4}
+      MYSQL_COLLATION: ${MYSQL_COLLATION:-utf8mb4_unicode_ci}        
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    init: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - mariadb-data:/var/lib/mysql       
+      - mariadb-logs:/var/log/mariadb
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      #- ./my.cnf:/etc/mysql/conf.d/my.cnf:ro      
     ports:
      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: MdbSql@123
-      MYSQL_DATABASE: defaultdatabase
-      MYSQL_USER: User123
-      MYSQL_PASSWORD: Pwd123
+    networks:
+     - local-network
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin --user=$${MYSQL_USER} --password=$${MYSQL_PASSWORD} --host=localhost ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 1m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
 
-   dbadmin:
-    image: phpmyadmin/phpmyadmin
+  phpmyadmin-service:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin-container
+    restart: always
+    networks:
+     - local-network
     ports:
-     - "8181:80"
+    - 8082:80
     environment:
-      PMA_HOST: mariadb
-      PMA_ARBITRARY: 1
-      PMA_USER: User123
-      PMA_PASSWORD: Pwd123
+      - PMA_ARBITRARY=1 
+      - PMA_HOST=mariadb-service
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
+      - PMA_PORT=${MYSQL_PORT:-3306}
+      - PMA_ABSOLUTE_URI=http://localhost:8082      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 1m
+    depends_on:
+      mariadb-service:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'

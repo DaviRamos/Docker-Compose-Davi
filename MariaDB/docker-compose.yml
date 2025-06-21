@@ -1,17 +1,61 @@
-version: '3.3'
+name: Mariadb-Service   
+
+networks:
+  local-network:
+    external: true
 
 volumes:
-  maria_store:
+  mariadb-data:
+    name: mariadb_data
+  mariadb-logs:
+    name: mariadb_logs
 
 services:
-   dbblog:
-     image: mariadb
+  mariadb-service:
+    image: mariadb:latest
+    container_name: mariadb-container
+    restart: always 
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST:-localhost}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_LOG_LEVEL: ${MYSQL_LOG_LEVEL:-2}
+      MYSQL_LOG_ERROR_VERBOSITY: ${MYSQL_LOG_ERROR_VERBOSITY:-2}
+      MYSQL_GENERAL_LOG: ${MYSQL_GENERAL_LOG:-1}
+      MYSQL_GENERAL_LOG_FILE: ${MYSQL_GENERAL_LOG_FILE:-/var/log/mariadb/general.log}
+      MYSQL_CHARSET: ${MYSQL_CHARSET:-utf8mb4}
+      MYSQL_COLLATION: ${MYSQL_COLLATION:-utf8mb4_unicode_ci}        
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    init: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
-      - maria_store:/var/lib/mysql
-     ports:
-       - "3306:3306"
-     environment:
-       MYSQL_ROOT_PASSWORD: MySql@123
-       MYSQL_DATABASE: defaultdatabase
-       MYSQL_USER: User123
-       MYSQL_PASSWORD: Pwd123
+      - mariadb-data:/var/lib/mysql       
+      - mariadb-logs:/var/log/mariadb
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      #- ./my.cnf:/etc/mysql/conf.d/my.cnf:ro      
+    ports:
+     - "3306:3306"
+    networks:
+     - local-network
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin --user=$${MYSQL_USER} --password=$${MYSQL_PASSWORD} --host=localhost ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 1m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
