@@ -1,4 +1,9 @@
-version: '2'
+name: kafka-Service   
+
+networks:
+  local-network:
+    external: true
+
 services:
   zookeeper:
     image: wurstmeister/zookeeper
