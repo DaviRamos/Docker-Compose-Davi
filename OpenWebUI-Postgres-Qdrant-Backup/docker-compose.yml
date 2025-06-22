@@ -1,4 +1,15 @@
-version: '3.8'
+name: ProjetoIA-Service   
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  openwebui_data:
+  postgres_data:
+  qdrant_data:
+  redis_data:
+
 services:
   openwebui:
     image: ghcr.io/open-webui/open-webui:latest
@@ -30,7 +41,7 @@ services:
     volumes:
       - openwebui_data:/app/backend/data
     networks:
-      - my_network
+      - local-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
@@ -52,7 +63,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres-init:/docker-entrypoint-initdb.d
     networks:
-      - my_network
+      - local-network
   qdrant:
     image: qdrant/qdrant:latest
     container_name: qdrant
@@ -64,9 +75,9 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
-      - my_network
+      - local-network
   redis:
-    image: redis:alpine
+    image: "redis:latest"
     container_name: redis
     hostname: redis
     restart: unless-stopped
@@ -74,14 +85,4 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - my_network
-
-networks:
-  my_network:
-    external: true
-    name: my_network
-volumes:
-  openwebui_data:
-  postgres_data:
-  qdrant_data:
-  redis_data:
+      - local-network

@@ -175,7 +175,7 @@ services:
   redis-service:
     image: "redis:latest"
     container_name: "redis_container"
-    restart: always
+    restart: alwaysRabbitMQ
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 1s

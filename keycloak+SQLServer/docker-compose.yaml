@@ -3,48 +3,190 @@ name: keycloak+SQLServer-Service
 networks:
   local-network:
     external: true
-  keycloak_net:
-    driver: bridge
+
 
 volumes:
-  sql_vol:
-    driver: local
-  keycloak_vol:  
-    driver: local  
+  sqlvol:
+    name: sql-vol
+  data:
+    name: sql-data
+  log:
+    name: sql-log
+  secrets:
+    name: sql-secrets
+  backups:
+    name: sql-backups
+  scripts:
+    name: sql-scripts
+  certs:
+    name: sql-certs
+  keys:
+    name: sql-keys
+  tempdb:
+    name: sql-tempdb
+  config:
+    name: sql-config
+  keycloak_data:
+    name: keycloak-service_data
 
 services:
-  keycloak_db:
-    image: "mcr.microsoft.com/mssql/server:2017-latest"
+  SQLServer-service:
+#image: "mcr.microsoft.com/mssql/server:2025-latest"
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: SqlServer-container
+    restart: always
+    user: root
+    hostname: sql-server
+    working_dir: /var/opt/mssql
+    environment:      
+      #SA_PASSWORD: ${SA_PASSWORD:-SqlServer@123} # Default password, can be overridden by environment variable
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:-SqlServer@123} # Default password, can be overridden by environment variable
+      MSSQL_PID:  ${MSSQL_PID:-Developer} # Edition of SQL Server, can be changed to Express, Standard, or Enterprise
+      MSSQL_AGENT_ENABLED: ${MSSQL_AGENT_ENABLED:-true} # Enable SQL Server Agent
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048} # Memory limit for SQL Server in MB
+      MSSQL_TCP_PORT: ${MSSQL_TCP_PORT:-1433} # Default port for SQL Server
+      ACCEPT_EULA:  ${ACCEPT_EULA:-Y} # Accept the SQL Server EULA, can be overridden by environment variable
+      # Uncomment the following line if you want to use a custom SA password
+      # Uncomment the following line if you want to use a custom collation
+      # MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS" # Default collation, can be changed to a custom collation
+      # Uncomment the following line if you want to use a custom collation
+      #
+      #
+      # MSSQL_COLLATION: "Latin1_General_100_CI_AS" # Example of a custom collation
+      # Uncomment the following line if you want to use a custom collation
+      # MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS" # Example of a custom collation  
+      MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS"    
+    command: /opt/mssql/bin/sqlservr
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    init: true
     volumes: 
-      - sql_vol:/var/opt/mssql
+      - data:/var/opt/mssql/data
+      - log:/var/opt/mssql/log
+      - secrets:/var/opt/mssql/secrets   
+      - backups:/var/backups
+      - scripts:/var/opt/mssql/scripts
+      - certs:/var/opt/mssql/certs
+      - keys:/var/opt/mssql/keys
+      - tempdb:/var/opt/mssql/tempdb
+      - config:/var/opt/mssql/config
+      - sqlvol:/var/opt/mssql
+      #- ./init-scripts:/docker-entrypoint-initdb.d   
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
+      # Uncomment the following line if you want to use a custom initialization script
+      # volumes:
+      #   - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Uncomment the following line if you want to use a custom certificate
+      # volumes:
+      #   - ./certs:/var/opt/mssql/certs:ro
+      # Uncomment the following line if you want to use a custom key
+      # volumes:
+      #   - ./keys:/var/opt/mssql/keys:ro
+      # Uncomment the following line if you want to use a custom data directory
+      # volumes:
+      #   - ./data:/var/opt/mssql/data:rw
+      # Uncomment the following line if you want to use a custom log directory
+      # volumes:
+      #   - ./logs:/var/opt/mssql/log:rw
+      # Uncomment the following line if you want to use a custom backup directory
+      # volumes:
+      #   - ./backups:/var/opt/mssql/backups:rw
+      # Uncomment the following line if you want to use a custom tempdb directory
+      # volumes:
+      #   - ./tempdb:/var/opt/mssql/tempdb:rw
+      # Uncomment the following line if you want to use a custom secrets directory
+      # volumes:
+      #   - ./secrets:/var/opt/mssql/secrets:ro
+      # Uncomment the following line if you want to use a custom scripts directory
+      # volumes:
+      #   - ./scripts:/var/opt/mssql/scripts:ro
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
     ports:
       - "1433:1433"
-      - "1434:1434"
-      - "443:443"
-    networks: 
-      - local-network   
-    environment:      
-      SA_PASSWORD: ${SA_PASSWORD}
-      ACCEPT_EULA: ${ACCEPT_EULA}
+    networks:
+     - local-network    
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-S", "localhost", "-U", "sa", "-P", "SqlServer@123", "-Q", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s  
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 2G
+        reservations:
+          cpus: '0.50'
+          memory: 1G
+    cpuset: '0,1'
+    # Uncomment the following line if you want to set a specific CPU core for the container
+    # cpuset: '0'
+    # Uncomment the following line if you want to set a specific memory limit for the container
+    # mem_limit: 2g
+    # Uncomment the following line if you want to set a specific CPU limit for the container
+    # cpu_limit: 1.0
 
-  keycloak:
-    image: jboss/keycloak:8.0.0
-    #command: ["-b", "0.0.0.0", "-Dkeycloak.migration.action=import", "-Dkeycloak.migration.provider=dir", "-Dkeycloak.migration.dir=/opt/jboss/keycloak/realm-config", "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING", "-Djboss.socket.binding.port-offset=1000", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
-    networks: 
-      - local-network
-    restart: always    
-    volumes:
-      - keycloak_vol:/opt/jboss/keycloak/realm-config    
+  keycloak-service:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: keycloak-container
+    restart: unless-stopped
     environment:
-      DB_VENDOR: ${DB_VENDOR}
-      DB_ADDR: ${DB_ADDR}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      KEYCLOAK_USER: ${KEYCLOAK_USER}
-      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      KC_DB: mssql
+      KC_DB_URL: jdbc:sqlserver://SQLServer-service:1433;databaseName=keycloak;trustServerCertificate=true
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME}
+      KC_DB_PASSWORD: ${SA_PASSWORD}
+      #KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      #KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_PORT: 8080
+      KC_HTTPS_PORT: 7443      
+      KC_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
+      KC_HTTP_ENABLED: 'true' #PRD false
+      KC_HEALTH_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KC_HTTP_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_CACHE_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_LOG_LEVEL: INFO # DEBUG     
+      KC_LOG_CONSOLE_COLOR: 'true'  
+      KC_PROXY: none
+      LANG: pt_BR.UTF-8 
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    init: true
+    #command: ['start-dev', '--http-port', '8080', '--https-port', '7443', '--hostname', 'keycloak-service']
+    command: ['start-dev', '--http-port', '8080']
     ports:
       - 8080:8080
+      - 7443:7443
+      - 9000:9000
+    networks:
+      - local-network
     depends_on:
-      - keycloak_db
+      - SQLServer-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+      start_period: 2m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 512M
+        reservations:
+          cpus: '0.30'
+          memory: 128M
+    cpuset: '1'
 
