@@ -7,6 +7,8 @@ networks:
 volumes:
   postgres-data:
     name: postgres-service_data
+  keycloak_data:
+    name: keycloak-service_data
 
 services:
   postgres-service: # Example. Remove before using.
@@ -54,16 +56,29 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres-service:5432/keycloakdb
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME: keycloak-service
+      #KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      #KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HOSTNAME: localhost
       KC_HOSTNAME_STRICT: false
       KC_HTTP_PORT: 8080
-      KC_HTTPS_PORT: 7443
+      KC_HTTPS_PORT: 7443      
+      KC_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
+      KC_HTTP_ENABLED: 'true' #PRD false
+      KC_HEALTH_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KC_HTTP_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_CACHE_METRICS_HISTOGRAMS_ENABLED: 'true'
+      KC_LOG_LEVEL: INFO # DEBUG     
+      KC_LOG_CONSOLE_COLOR: 'true'  
+      KC_PROXY: none
+      LANG: pt_BR.UTF-8 
     volumes:
-      - ./keycloak_data:/opt/keycloak/data
+      - keycloak_data:/opt/keycloak/data
     init: true
-    command: ['start-dev', '--http-port', '8080', '--https-port', '7443', '--hostname', 'keycloak-service']
+    #command: ['start-dev', '--http-port', '8080', '--https-port', '7443', '--hostname', 'keycloak-service']
+    command: ['start-dev', '--http-port', '8080']
     ports:
       - 8080:8080
       - 7443:7443
