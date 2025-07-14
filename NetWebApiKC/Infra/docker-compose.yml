@@ -72,6 +72,7 @@ services:
       KC_LOG_CONSOLE_COLOR: 'true'  
       KC_PROXY: none
       LANG: pt_BR.UTF-8
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
       #KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm-export.json      
       #KEYCLOAK_EXTRA_ARGS: -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
     volumes:
