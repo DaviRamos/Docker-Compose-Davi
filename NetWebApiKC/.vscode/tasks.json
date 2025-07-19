@@ -1,0 +1,69 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "docker-build",
+			"label": "docker-build: debug",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "netwebapikc:dev",
+				"target": "base",
+				"dockerfile": "${workspaceFolder}/NetWebApiKC/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/NetWebApiKC/NetWebApiKC.csproj"
+			}
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build: release",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "netwebapikc:latest",
+				"dockerfile": "${workspaceFolder}/NetWebApiKC/Dockerfile",
+				"context": "${workspaceFolder}",
+				"platform": {
+					"os": "linux",
+					"architecture": "amd64"
+				},
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/NetWebApiKC/NetWebApiKC.csproj"
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: debug",
+			"dependsOn": [
+				"docker-build: debug"
+			],
+			"dockerRun": {
+        		"ports": [
+            		{ "hostPort": 5111, "containerPort": 5111 }
+        		]
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/NetWebApiKC/NetWebApiKC.csproj",
+				"enableDebugging": true
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: release",
+			"dependsOn": [
+				"docker-build: release"
+			],
+			"dockerRun": {},
+			"netCore": {
+				"appProject": "${workspaceFolder}/NetWebApiKC/NetWebApiKC.csproj"
+			}
+		}
+	]
+}

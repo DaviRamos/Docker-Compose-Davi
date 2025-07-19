@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Containers: .NET Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "netCore": {
+                "appProject": "${workspaceFolder}/NetWebApiKC/NetWebApiKC.csproj"
+            },
+            "dockerServerReadyAction": {
+                //"uriFormat": "%s://localhost:%s/WeatherForecast"
+                "uriFormat": "%s://localhost:%s/swagger/index.html"
+            }   
+        }
+    ]
+}

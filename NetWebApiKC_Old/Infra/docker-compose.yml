@@ -48,7 +48,7 @@ services:
           memory: 128M
 
   keycloak-service:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.2
     container_name: keycloak-container
     restart: unless-stopped
     environment:
@@ -61,7 +61,7 @@ services:
       #KC_HOSTNAME: localhost
       #KC_HOSTNAME_STRICT: false
       KC_HTTP_PORT: 8080
-     # KC_HTTPS_PORT: 7443      
+      KC_HTTPS_PORT: 7443      
       KC_HOSTNAME_STRICT_FRONTCHANNEL: 'true'
       KC_HTTP_ENABLED: 'true' #PRD false
       KC_HEALTH_ENABLED: 'true'
@@ -72,17 +72,17 @@ services:
       KC_LOG_CONSOLE_COLOR: 'true'  
       KC_PROXY: none
       LANG: pt_BR.UTF-8
-   #   KEYCLOAK_IMPORT: /opt/keycloak/data/import/WebAPIKC-realm.json         
-   #   KEYCLOAK_EXTRA_ARGS: -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
+      #KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm-export.json      
+      #KEYCLOAK_EXTRA_ARGS: -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
     volumes:
       - keycloak_data:/opt/keycloak/data
-      - ./realm/WebAPIKC-realm.json:/opt/keycloak/import/WebAPIKC-realm.json
+      - ./realm/realm-export.json:/opt/keycloak/import/realm-export.json
     #init: true
-    command: ['start-dev', '--http-port', '8080'] #,'--import-realm'  '--override', 'true',
+    command: ['start-dev','--import-realm', '--http-port', '8080'] #,'--import-realm'
    
     ports:
       - 8080:8080
-      #- 7443:7443
+      - 7443:7443
       #- 9000:9000
     networks:
       - local-network
