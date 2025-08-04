@@ -24,7 +24,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet("user-endpoint")]
-    [Authorize(Policy = "RequireWritedataRole")]
+    [Authorize(Roles = "administrador")]
     public IActionResult GetUserData()
     {
         return Ok("This is a user-only endpoint!");

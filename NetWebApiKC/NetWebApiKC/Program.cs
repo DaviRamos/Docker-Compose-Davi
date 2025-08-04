@@ -78,13 +78,27 @@ builder.Services.AddKeycloakAuthorization(builder.Configuration);
 */
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddKeycloakWebApi(builder.Configuration);
-builder.Services .AddAuthorization().AddKeycloakAuthorization().AddAuthorizationBuilder().AddPolicy(
+builder.Services
+    .AddAuthorization()
+    .AddKeycloakAuthorization(options =>
+    {
+        options.EnableRolesMapping =
+            RolesClaimTransformationSource.ResourceAccess;
+        options.RolesResource = "netwebapikc-api";
+    })
+    .AddAuthorizationBuilder()
+    .AddPolicy(
+        "RequireWritedataRole",
+        policy => policy.RequireRole("administrador")
+    );
+
+/*builder.Services .AddAuthorization().AddKeycloakAuthorization().AddAuthorizationBuilder().AddPolicy(
     "RequireWritedataRole",
     policy => policy.RequireResourceRolesForClient(
         "netwebapikc-api", // client conforme configurado no Keycloak
         ["administrador"] // Roles necessárias (Nome da role definida lá no Keycloak)
     )
-);
+);*/
 
 
 var app = builder.Build();
