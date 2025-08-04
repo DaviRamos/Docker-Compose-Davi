@@ -1,35 +1,33 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NetWebApiKC.Controllers;
 
-[Authorize]
+
 [ApiController]
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
+    [HttpGet("secure-endpoint")]
+    [Authorize] // simple authorization 
+    public IActionResult GetSecureData()
     {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
-    {
-        _logger = logger;
+        return Ok("This is a secure endpoint!");
     }
 
-    //[Authorize(Roles ="administrador")]
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    [HttpGet("admin-endpoint")]
+    [Authorize(Policy = "RequireWritedataRole")]
+    public IActionResult GetAdminData()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+        return Ok("This is an admin-only endpoint!");
     }
+
+    [HttpGet("user-endpoint")]
+    [Authorize(Policy = "RequireWritedataRole")]
+    public IActionResult GetUserData()
+    {
+        return Ok("This is a user-only endpoint!");
+    }
+    
 }
