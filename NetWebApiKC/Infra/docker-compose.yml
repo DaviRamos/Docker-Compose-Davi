@@ -81,7 +81,7 @@ services:
     command: ['start-dev', '--http-port', '8080'] #,'--import-realm'  '--override', 'true',
    
     ports:
-      - 8080:8080
+      - 3000:8080
       #- 7443:7443
       #- 9000:9000
     networks:
