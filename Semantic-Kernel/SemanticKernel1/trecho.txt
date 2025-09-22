@@ -1,0 +1,19 @@
+string? input;
+do
+{
+    Console.Write("User > ");
+    input = Console.ReadLine();
+
+    history.AddUserMessage(input);
+
+    var result = chatCompletionService
+        .GetChatMessageContentsAsync(
+            history,
+            executionSettings: settings,
+            kernel: kernel);
+
+    Console.WriteLine("Assistant > " + result);
+
+    history.AddUserMessage(result.Role, result.Content ?? string.Empty);
+    
+} while (input is null);
