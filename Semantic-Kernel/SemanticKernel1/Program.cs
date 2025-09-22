@@ -9,9 +9,8 @@ var builder = Kernel.CreateBuilder()
     .AddOllamaChatCompletion(
         modelId: "llama3.1:latest",
         endpoint: new Uri("http://localhost:11434")
-        );
+    );        
  
-
 //Enterprise Components
 builder.Services.AddLogging(x 
     => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
@@ -26,7 +25,6 @@ OllamaPromptExecutionSettings settings = new()
 {
     FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 };
-
 
 Console.WriteLine("Write your message to the AI bot!");
 
