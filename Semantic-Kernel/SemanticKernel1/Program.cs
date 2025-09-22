@@ -1,32 +1,53 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using SemanticKernel1.Plugins;
 
 var builder = Kernel.CreateBuilder()
     .AddOllamaChatCompletion(
-        modelid: "llama3.1:latest",
+        modelId: "llama3.1:latest",
         endpoint: new Uri("http://localhost:11434")
-        )
-    .Build();
+        );
+ 
 
 //Enterprise Components
 builder.Services.AddLogging(x 
     => x.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-var app = builder.Build();
+var kernel  = builder.Build();
 
-var chatCompletionService = app.GetRequiredService<IChatCompletion>();
+var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
-string? input;
-do
+kernel.Plugins.AddFromType<ProductPlugin>("Plugins");
+
+OllamaPromptExecutionSettings settings = new()
 {
-    Console.Write("User > ");
-    input = Console.ReadLine();
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+};
 
-    var result = chatCompletionService
-    .GetChatMessagesAsync(input, Kernel: app);
 
-    Console.WriteLine("Assistant > " + result);
-    
-} while (input is null);
+Console.WriteLine("Write your message to the AI bot!");
+
+var history = new ChatHistory();
+string? userInput;
+while (true)
+{
+    userInput = Console.ReadLine();
+    if (string.IsNullOrEmpty(userInput))
+    {
+        break;
+    }
+
+    history.AddUserMessage(userInput);
+
+    var result = await chatCompletionService.GetChatMessageContentAsync(
+        history,
+        executionSettings: settings,
+        kernel: kernel);
+
+    history.AddMessage(result.Role, result.Content ?? string.Empty);
+
+    Console.WriteLine($"AI: {result.Content}");
+}
