@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPlus1Detector", "NPlus1Detector\NPlus1Detector.csproj", "{2901A45F-55FE-44CB-A442-FB39236C2F34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPlus1Issue", "NPlus1Issue\NPlus1Issue.csproj", "{343995D4-A7D5-49AE-9EFE-C50FD0D80A42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2901A45F-55FE-44CB-A442-FB39236C2F34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2901A45F-55FE-44CB-A442-FB39236C2F34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2901A45F-55FE-44CB-A442-FB39236C2F34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2901A45F-55FE-44CB-A442-FB39236C2F34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343995D4-A7D5-49AE-9EFE-C50FD0D80A42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343995D4-A7D5-49AE-9EFE-C50FD0D80A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343995D4-A7D5-49AE-9EFE-C50FD0D80A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343995D4-A7D5-49AE-9EFE-C50FD0D80A42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,39 @@
+@ReprWebApplication_HostAddress = http://localhost:5043
+
+### SimpleWeatherEndpoint - GET /weatherforecast - ReprEndpoint
+GET {{ReprWebApplication_HostAddress}}/weatherforecast
+Accept: application/json
+
+###
+
+### CreateWeatherEndpoint - POST /api/weather/create - ReprRequestEndpoint<CreateWeatherRequest>
+POST {{ReprWebApplication_HostAddress}}/api/weather/create
+Content-Type: application/json
+
+{
+  "date": "2025-06-26",
+  "temperatureC": 25,
+  "summary": "Sunny",
+  "city": "Vienna"
+}
+
+###
+
+### WeatherForecastEndpoint - GET /api/weather/forecast (with query parameters)
+### RequestAsParameters=true
+### ReprEndpoint<GetWeatherRequest, WeatherResponse>
+GET {{ReprWebApplication_HostAddress}}/api/weather/forecast?days=7&city=Vienna
+Accept: application/json
+
+###
+
+### WeatherStatsEndpoint - GET /api/weather/stats - ReprResponseEndpoint<WeatherResponse>
+GET {{ReprWebApplication_HostAddress}}/api/weather/stats
+Accept: application/json
+
+###
+
+### WeatherStatsV2Endpoint - GET /api/weather/v2.0/stats or /api/weather/v2/stats
+### ReprResponseEndpoint<WeatherResponse> with versioning
+GET {{ReprWebApplication_HostAddress}}/api/weather/v2/stats
+Accept: application/json
