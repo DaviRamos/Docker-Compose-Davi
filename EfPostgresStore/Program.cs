@@ -54,8 +54,7 @@ app.MapPut("v1/categories/{id}", async (
 
 app.MapDelete("v1/categories/{id}", async (
     AppDbContext context,
-    int id,
-    Category category) =>
+    int id) =>
     {
         var existingCategory = await context.Categories.FindAsync(id);
         if (existingCategory is null) return Results.NotFound();
@@ -67,9 +66,7 @@ app.MapDelete("v1/categories/{id}", async (
     });
 
 app.MapGet("v1/categories", async (
-    AppDbContext context,
-    int id,
-    Category category) =>
+    AppDbContext context ) =>
     {
         var categories = await context.Categories.AsNoTracking().ToListAsync();
         return Results.Ok(categories);
