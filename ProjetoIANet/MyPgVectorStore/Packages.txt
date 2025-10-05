@@ -1,0 +1,4 @@
+dotnet add package Microsoft.SemanticKernel.Connectors.Ollama --prerelease
+dotnet add package Microsoft.SemanticKernel.Connectors.PgVector --prerelease
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+dotnet add package Pgvector.EntityFrameworkCore

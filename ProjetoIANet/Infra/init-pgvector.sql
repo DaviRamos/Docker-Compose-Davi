@@ -66,4 +66,6 @@ INSERT INTO products (id, title, category, summary, description) VALUES
 
 
 
-slect
+select * from products
+select * from recomendations
+-- DELETE FROM public.recomendations

@@ -1,5 +1,10 @@
 name: ProjetoIANet
 
+# É necessário baixar este modelo sno container do ollama
+# ollama pull llama2
+# ollama pull all-minilm
+# ollama pull mxbai-embed-large
+
 networks:
   local-network:
     external: true
