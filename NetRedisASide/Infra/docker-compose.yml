@@ -1,0 +1,136 @@
+name: ProjetoIANet+Redis
+
+# É necessário baixar este modelo sno container do ollama
+# ollama pull llama2
+# ollama pull all-minilm
+# ollama pull mxbai-embed-large
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  pgdata:
+  ollama-data:
+  weaviate_data:
+  redis_data:
+    
+
+services:
+  PGVector:
+    image: pgvector/pgvector:pg17 # Use an image with pgvector for Postgres 17
+    container_name: postgres-PGVector-redis-container
+    hostname: PGVector
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_MULTIPLE_DATABASES: keycloak,langflow,vectordb
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_LOG_LEVEL: ${POSTGRES_LOG_LEVEL}
+      PGDATA: /var/lib/postgresql/data/pgdata    
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d     
+    ports:
+        - 5432:5432
+    networks:
+      - local-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d postgres
+      interval: 50s
+      timeout: 5s
+      retries: 15
+      start_period: 2m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  ollama:
+    image: ollama/ollama
+    container_name: ollamaNet-redis-container
+    hostname: ollama
+#    command: ["ollama", "pull", "llama2"]
+    networks:
+      - local-network
+    volumes:
+      - ollama-data:/root/.ollama    
+    ports:
+      - "11434:11434"
+    pull_policy: always
+    tty: true
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.50'  
+          devices:
+            - driver: ${OLLAMA_GPU_DRIVER-nvidia}
+              count: ${OLLAMA_GPU_COUNT-1}
+              capabilities:
+                - gpu  
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:latest
+    container_name: weaviateNet-redis-container
+    hostname: weaviate
+    command: ["--host", "0.0.0.0", "--port", "8080","--scheme", "http"]      
+    networks:
+      - local-network
+    ports:
+    - "8080:8080"  # REST calls
+    - "50051:50051"  # gRPC calls
+    volumes:
+    - weaviate_data:/var/lib/weaviate
+    restart: on-failure:0
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_API_BASED_MODULES: 'true'
+      ENABLE_MODULES: 'text2vec-ollama,generative-ollama'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-ollama'
+      CLUSTER_HOSTNAME: 'node1'  
+      ASYNC_INDEXING: 'true'    
+  redis:
+    image: "redis:latest"
+    container_name: "redis-redis-container"
+    restart: always
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DATABASES=${REDIS_DATABASES}
+    ports:
+      - "6379:6379"
+    networks:
+     - local-network
+    volumes:
+      - redis_data:/data
+      #  - /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    # Uncomment the next line to use a custom configuration file
+    # command: ["redis-server", "/usr/local/etc/redis/redis.conf"] 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    cpuset: '1'
