@@ -1,0 +1,78 @@
+﻿.chat-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-container {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: end;
+}
+
+.chat-question {
+    background-color: #1A191F;
+    padding: 1rem;
+    margin: 1rem;
+    align-self: flex-end;
+}
+
+.chat-answer {
+    width: 70%;
+    background-color: #16151C;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.chat-prompt {
+    height: 180px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 1rem;
+}
+
+.chat-prompt textarea {
+    background-color: #1A191F;
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    flex: 1;
+    padding: 1rem;
+    font-family: "Nunito", sans-serif;
+    font-size: 1.4rem;
+}
+
+.chat-prompt button {
+    background-color: #8625D2;
+    margin: 1rem;
+    color: #FFFFFF;
+    border: none;
+    cursor: pointer;
+    padding: 1rem;
+    border-radius: 8px;
+
+}
+
+.chat-prompt textarea:disabled, button:disabled {
+    cursor: default;
+    opacity: 0.2;
+}
+
+small {
+    opacity: 0.5;
+    font-size: 0.7rem;
+}
+
+.loading {
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    to {
+        left: 100%;
+    }
+}

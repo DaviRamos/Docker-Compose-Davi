@@ -1,0 +1,40 @@
+﻿@using CoffeeShop.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Context
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column" style="padding-left: 1rem">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> New chat
+            </NavLink>
+        </div>
+
+        <h4>Chats</h4>
+        @foreach (var chat in _chats)
+        {
+            <div class="nav-item">
+                <NavLink class="nav-link" href="@($"chats/{chat.Id}")">
+                    @(chat.Title.Length <= 23 ? chat.Title : (chat.Title[..23] + "..."))
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private List<ChatModel> _chats = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _chats = await Context
+            .Chats
+            .AsNoTracking()
+            .OrderByDescending(x => x.UpdatedAt)
+            .Take(5)
+            .ToListAsync();
+    }
+
+}

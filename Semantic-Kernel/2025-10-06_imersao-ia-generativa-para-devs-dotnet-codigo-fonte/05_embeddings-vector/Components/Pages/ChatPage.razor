@@ -1,0 +1,130 @@
+﻿@page "/chats/{id}"
+@using CoffeeShop.Extensions
+@using CoffeeShop.Models
+@using CoffeeShop.Prompts
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@inject AppDbContext Context
+@inject IChatCompletionService ChatCompletionService
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Home</PageTitle>
+
+<div class="chat-page">
+    <div class="chat-container">
+        @foreach (var item in History.Where(x => x.Role != AuthorRole.System))
+        {
+            <div class="chat-@(item.Role == AuthorRole.User ? "question" : "answer")">
+                @item.Content <br>
+                <small>@DateTime.UtcNow</small>
+            </div>
+        }
+
+        @if (IsBusy)
+        {
+            <div class="chat-answer loading">
+                ...
+            </div>
+        }
+
+        <div @ref="_bottomMarker"></div>
+    </div>
+    <div class="chat-prompt">
+        <textarea cols="30" rows="3" @bind="Prompt" disabled="@IsBusy"></textarea>
+        <button @onclick="OnSendAsync" disabled="@IsBusy">
+            ENVIAR
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private ElementReference _bottomMarker;
+
+    private bool IsBusy { get; set; } = false;
+    private string? Prompt { get; set; }
+    private ChatHistory History { get; set; } = [];
+    private ChatModel? _model = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsBusy = true;
+        History.AddSystemMessage(SystemPrompt.Default);
+
+        _model = await Context
+            .Chats
+            // .AsNoTracking()
+            .Include(x => x.Messages)
+            .FirstOrDefaultAsync(x => x.Id == new Guid(Id));
+
+        if (_model is null)
+            return;
+
+        foreach (var message in _model.Messages)
+            History.AddMessage(message.Role.Map(), message.Content);
+
+        if (_model.Messages.Last().Role == AuthorRole.User.Map())
+        {
+            var response = await ChatCompletionService.GetChatMessageContentAsync(History);
+            History.Add(response);
+
+            var message = new ChatMessageModel
+            {
+                Id = Guid.CreateVersion7(),
+                ChatModel = _model,
+                Content = response.Content ?? string.Empty,
+                Role = AuthorRole.Assistant.Map(),
+            };
+            await Context.Messages.AddAsync(message);
+            await Context.SaveChangesAsync();
+        }
+
+        IsBusy = false;
+    }
+
+    private async Task OnSendAsync()
+    {
+        if (string.IsNullOrEmpty(Prompt))
+            return;
+
+        IsBusy = true;
+        await ScrollToBottomAsync();
+
+        var userMessage = new ChatMessageModel
+        {
+            Id = Guid.CreateVersion7(),
+            ChatModel = _model!,
+            Content = Prompt,
+            Role = AuthorRole.User.Map(),
+        };
+        await Context.Messages.AddAsync(userMessage);
+
+        History.AddUserMessage(Prompt);
+        await ScrollToBottomAsync();
+
+        var response = await ChatCompletionService.GetChatMessageContentAsync(History);
+        History.Add(response);
+        Prompt = string.Empty;
+
+        var assistantMessage = new ChatMessageModel
+        {
+            Id = Guid.CreateVersion7(),
+            ChatModel = _model!,
+            Content = response.Content ?? string.Empty,
+            Role = AuthorRole.Assistant.Map(),
+        };
+        await Context.Messages.AddAsync(assistantMessage);
+
+        await Context.SaveChangesAsync();
+
+        IsBusy = false;
+        await ScrollToBottomAsync();
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("scrollIntoView", _bottomMarker);
+    }
+
+}

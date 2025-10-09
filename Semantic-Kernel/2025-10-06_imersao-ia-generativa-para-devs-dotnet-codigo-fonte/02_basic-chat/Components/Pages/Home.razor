@@ -1,0 +1,81 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject IChatCompletionService ChatCompletionService
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Home</PageTitle>
+
+<div class="chat-page">
+    <div class="chat-container">
+        @foreach (var item in History.Where(x => x.Role != AuthorRole.System))
+        {
+            <div class="chat-@(item.Role == AuthorRole.User ? "question" : "answer")">
+                @item.Content
+            </div>
+        }
+
+        @if (IsBusy)
+        {
+            <div class="chat-answer">
+                ...
+            </div>
+        }
+
+        <div @ref="_bottomMarker"></div>
+    </div>
+    <div class="chat-prompt">
+        <textarea cols="30" rows="3" @bind="Prompt" disabled="@IsBusy"></textarea>
+        <button @onclick="OnSendAsync" disabled="@IsBusy">
+            Enviar
+        </button>
+    </div>
+</div>
+
+@code {
+
+    private ElementReference _bottomMarker;
+
+    private bool IsBusy { get; set; } = false;
+    private string? Prompt { get; set; }
+    private ChatHistory History { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsBusy = true;
+        History.AddSystemMessage(
+            "Você é um assistente virtual especializado em atendimento humanizado. " +
+            "Nós somos uma escola de programação online com foco em tecnologias Microsoft, tendo C# e .NET como principais linguagens e ferramentas." +
+            "Tente responder sempre de forma simples e resumida." +
+            "As respostas devem ser de fácil entendimento.");
+
+        var response = await ChatCompletionService.GetChatMessageContentAsync(History);
+        History.Add(response);
+
+        IsBusy = false;
+    }
+
+    private async Task OnSendAsync()
+    {
+        if (string.IsNullOrEmpty(Prompt))
+            return;
+
+        IsBusy = true;
+        await ScrollToBottomAsync();
+
+        History.AddUserMessage(Prompt);
+        await ScrollToBottomAsync();
+
+        var response = await ChatCompletionService.GetChatMessageContentAsync(History);
+        History.Add(response);
+        Prompt = string.Empty;
+
+        IsBusy = false;
+        await ScrollToBottomAsync();
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("scrollIntoView", _bottomMarker);
+    }
+
+}
