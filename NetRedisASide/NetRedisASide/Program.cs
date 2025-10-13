@@ -6,13 +6,35 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Add DbContext and other services 
+var connectionStringPostgres = builder.Configuration.GetConnectionString("PostgresConnection")
+    ?? throw new InvalidOperationException("Connection string 'PostgresConnection' not found.");
 
+var connectionStringRedis = builder.Configuration.GetConnectionString("RedisConnection")
+    ?? throw new InvalidOperationException("Connection string 'RedisConnection' not found.");
+/*    
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "MyApplication_";
+});
+*/
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionStringPostgres));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString(connectionStringRedis);
+    options.InstanceName = "MyApplication_";
+});
 
+// Register your custom seeder class
+builder.Services.AddScoped<DataSeeder>();
+
+// Add controllers, swagger, etc.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -38,6 +60,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await seeder.SeedAsync();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
