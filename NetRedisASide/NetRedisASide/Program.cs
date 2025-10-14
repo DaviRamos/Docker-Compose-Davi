@@ -65,5 +65,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapAssuntoEndpoints();
+app.MapTipoDocumentoEndpoints();
+app.MapMovimentacaoEndpoints();
 
 app.Run();

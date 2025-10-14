@@ -7,7 +7,7 @@ namespace NetRedisASide.Data
     {               
         public DbSet<Assunto> Assuntos { get; set; } =  null!;
         public DbSet<Movimentacao> Movimentacoes { get; set; } = null!;
-        public DbSet<TipoDocumento> TiposDocumento { get; set; } = null!;
+        public DbSet<TipoDocumento> TiposDocumentos { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

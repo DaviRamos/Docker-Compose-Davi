@@ -7,66 +7,66 @@ using System.Text.Json;
 
 namespace NetRedisASide.Endpoints;
 
-public static class AssuntoEndpoints
+public static class TipoDocumentoEndpoints
 {
-    public static void MapAssuntoEndpoints(this IEndpointRouteBuilder app)
+    public static void MapTipoDocumentoEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/", () => "Hello World!");
 
-        app.MapPost("v1/Assuntos", async (
+        app.MapPost("v1/TiposDocumentos", async (
 
-            Assunto assunto,
+            TipoDocumento tipoDocumento,
             AppDbContext dbContext,
             IDistributedCache cache) =>
         {
-            dbContext.Assuntos.Add(assunto);
+            dbContext.TiposDocumentos.Add(tipoDocumento);
             await dbContext.SaveChangesAsync();
 
             // Invalidate the cache
-            await cache.RemoveAsync($"Assunto-{assunto.Id}");
+            await cache.RemoveAsync($"TipoDocumento-{tipoDocumento.Id}");
         });
 
-        app.MapGet("v1/assuntos", async (
+        app.MapGet("v1/tipo-documentos", async (
             AppDbContext context,
             IDistributedCache cache) =>
         {
-            var cacheKey = "AssuntosList";
-            var cachedAssuntos = await cache.GetStringAsync(cacheKey);
+            var cacheKey = "TipoDocumentosList";
+            var cachedTipoDocumentos = await cache.GetStringAsync(cacheKey);
 
-            if (cachedAssuntos is not null)
+            if (cachedTipoDocumentos is not null)
             {
-                return Results.Ok(cachedAssuntos);
+                return Results.Ok(cachedTipoDocumentos);
             }
 
-            var assuntos = await context.Assuntos.AsNoTracking().ToListAsync();
-            await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(assuntos));
+            var tipoDocumentos = await context.TiposDocumentos.AsNoTracking().ToListAsync();
+            await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(tipoDocumentos));
 
-            return Results.Ok(assuntos);
+            return Results.Ok(tipoDocumentos);
         });
 
 
-        app.MapGet("v1/Assuntos/{id:int}", async (
+        app.MapGet("v1/tipos-documentos/{id:int}", async (
             int id,
             AppDbContext context,
             IDistributedCache cache) =>
         {
-            var cacheKey = $"Assunto-{id}";
-            var cachedAssunto = await cache.GetStringAsync(cacheKey);
+            var cacheKey = $"TipoDocumento-{id}";
+            var cachedTipoDocumento = await cache.GetStringAsync(cacheKey);
 
-            if (cachedAssunto is not null)
+            if (cachedTipoDocumento is not null)
             {
-                var assuntoFromCache = JsonSerializer.Deserialize<Assunto>(cachedAssunto);
-                return Results.Ok(assuntoFromCache);
+                var tipoDocumentoFromCache = JsonSerializer.Deserialize<TipoDocumento>(cachedTipoDocumento);
+                return Results.Ok(tipoDocumentoFromCache);
             }
 
-            var assunto = await context.Assuntos.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
-            if (assunto is null)
+            var tipoDocumento = await context.TiposDocumentos.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
+            if (tipoDocumento is null)
             {
                 return Results.NotFound();
             }
 
-            await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(assunto));
-            return Results.Ok(assunto);
+            await cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(tipoDocumento));
+            return Results.Ok(tipoDocumento);
         });
 
         app.MapPut("v1/Assuntos/{id:int}", async (
