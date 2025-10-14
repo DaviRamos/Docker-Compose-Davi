@@ -11,7 +11,9 @@ namespace NetRedisASide.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-          // Configurações adicionais do modelo podem ser feitas aqui
+          modelBuilder.ApplyConfigurationsFromAssembly(typeof(Assunto).Assembly);
+          modelBuilder.ApplyConfigurationsFromAssembly(typeof(Movimentacao).Assembly);
+          modelBuilder.ApplyConfigurationsFromAssembly(typeof(TipoDocumento).Assembly);
         }
     }
 

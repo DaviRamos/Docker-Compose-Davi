@@ -11,8 +11,6 @@ public static class AssuntoEndpoints
 {
     public static void MapAssuntoEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/", () => "Hello World!");
-
         app.MapPost("v1/Assuntos", async (
 
             Assunto assunto,
@@ -82,6 +80,8 @@ public static class AssuntoEndpoints
             }
 
             assunto.Nome = updatedAssunto.Nome;
+            assunto.Descricao = updatedAssunto.Descricao;
+            assunto.DataAtualizacao = DateTime.Now;
             await context.SaveChangesAsync();
 
             // Invalidate the cache

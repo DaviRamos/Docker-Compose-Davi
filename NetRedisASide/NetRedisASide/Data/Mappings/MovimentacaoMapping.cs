@@ -28,7 +28,7 @@ namespace NetRedisASide.Data.Mappings
                 .HasColumnType("varchar")
                 .HasMaxLength(250);        
 
-            builder.HasIndex(c => c.Nome).IsUnique().HasDatabaseName("IX_Assuntos_Nome");
+            builder.HasIndex(c => c.Nome).IsUnique().HasDatabaseName("IX_Movimentacoes_Nome");
             builder.Property(c => c.DataCriacao)
                 .HasColumnName("DataCriacao")
                 .HasDefaultValueSql("now()")

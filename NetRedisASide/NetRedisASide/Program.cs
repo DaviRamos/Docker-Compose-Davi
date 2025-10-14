@@ -68,4 +68,6 @@ app.MapAssuntoEndpoints();
 app.MapTipoDocumentoEndpoints();
 app.MapMovimentacaoEndpoints();
 
+app.MapGet("/", () => "Hello World!");
+
 app.Run();

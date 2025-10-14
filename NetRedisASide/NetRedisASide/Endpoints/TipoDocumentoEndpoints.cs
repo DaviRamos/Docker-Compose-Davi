@@ -11,8 +11,6 @@ public static class TipoDocumentoEndpoints
 {
     public static void MapTipoDocumentoEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/", () => "Hello World!");
-
         app.MapPost("v1/TiposDocumentos", async (
 
             TipoDocumento tipoDocumento,
@@ -26,7 +24,7 @@ public static class TipoDocumentoEndpoints
             await cache.RemoveAsync($"TipoDocumento-{tipoDocumento.Id}");
         });
 
-        app.MapGet("v1/tipo-documentos", async (
+        app.MapGet("v1/TiposDocumentoss", async (
             AppDbContext context,
             IDistributedCache cache) =>
         {
@@ -45,7 +43,7 @@ public static class TipoDocumentoEndpoints
         });
 
 
-        app.MapGet("v1/tipos-documentos/{id:int}", async (
+        app.MapGet("v1/TiposDocumentos/{id:int}", async (
             int id,
             AppDbContext context,
             IDistributedCache cache) =>
@@ -69,45 +67,47 @@ public static class TipoDocumentoEndpoints
             return Results.Ok(tipoDocumento);
         });
 
-        app.MapPut("v1/Assuntos/{id:int}", async (
+        app.MapPut("v1/TiposDocumentos/{id:int}", async (
             int id,
-            Assunto updatedAssunto,
+            TipoDocumento updatedTipoDocumento,
             AppDbContext context,
             IDistributedCache cache) =>
         {
-            var assunto = await context.Assuntos.FindAsync(id);
-            if (assunto is null)
+            var tipoDocumento = await context.TiposDocumentos.FindAsync(id);
+            if (tipoDocumento is null)
             {
                 return Results.NotFound();
             }
 
-            assunto.Nome = updatedAssunto.Nome;
+            tipoDocumento.Nome = updatedTipoDocumento.Nome;
+            tipoDocumento.Descricao = updatedTipoDocumento.Descricao;
+            tipoDocumento.DataAtualizacao = DateTime.Now;
             await context.SaveChangesAsync();
 
             // Invalidate the cache
-            await cache.RemoveAsync($"Assunto-{id}");
-            await cache.RemoveAsync("AssuntosList");
+            await cache.RemoveAsync($"TipoDocumento-{id}");
+            await cache.RemoveAsync("TiposDocumentosList");
 
             return Results.NoContent();
         });
 
-        app.MapDelete("v1/Assuntos/{id:int}", async (
+        app.MapDelete("v1/TiposDocumentos/{id:int}", async (
             int id,
             AppDbContext context,
             IDistributedCache cache) =>
         {
-            var assunto = await context.Assuntos.FindAsync(id);
-            if (assunto is null)
+            var tipoDocumento = await context.TiposDocumentos.FindAsync(id);
+            if (tipoDocumento is null)
             {
                 return Results.NotFound();
             }
 
-            context.Assuntos.Remove(assunto);
+            context.TiposDocumentos.Remove(tipoDocumento);
             await context.SaveChangesAsync();
 
             // Invalidate the cache
-            await cache.RemoveAsync($"Assunto-{id}");
-            await cache.RemoveAsync("AssuntosList");
+            await cache.RemoveAsync($"TipoDocumento-{id}");
+            await cache.RemoveAsync("TiposDocumentosList");
 
             return Results.NoContent();
         });
