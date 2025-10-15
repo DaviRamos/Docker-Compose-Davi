@@ -1,5 +1,20 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "postman.settings.dotenv-detection-notification-visibility": false,
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "ProjetoIA",
+            "group": "Projetos Pessoais",
+            "database": "NetRedisASide",
+            "username": "postgres",
+            "password": "some_random_postgres_password"
+        }
+    ]
 }
