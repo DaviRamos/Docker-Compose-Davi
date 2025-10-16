@@ -90,50 +90,56 @@ dotnet run
 Todos os endpoints estão protegidos por autenticação JWT do Keycloak. Use o usuário admin/admin123 para testes completos! 🔐
 
 # 5. Prompt Uitlizado
-Crie um aplicativo de em .net 9 de nome NetRedisASide2:
-1 Que Utilize os seguintes classes de modelo 
-1.1 
-public class Assunto
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = String.Empty;
-    public string Descricao { get; set; } = String.Empty;
-    public DateTime DataCriacao { get; set; }
-    public DateTime DataAtualizacao { get; set; }
-}
-1.2public class Movimentacao
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = String.Empty;
-    public string Descricao { get; set; } = String.Empty;
-    public DateTime DataCriacao { get; set; }
-    public DateTime DataAtualizacao { get; set; }
-}
-1.3 public class TipoDocumento
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = String.Empty;
-    public string Descricao { get; set; } = String.Empty;
-    public DateTime DataCriacao { get; set; }
-    public DateTime DataAtualizacao { get; set; }
-}
+Crie um aplicativo em .net 9 com o nome NetRedisASide2:
+Considere as premissas que no ambiente:
+	- O Docker já esta instalado e funcionando
+	- O Docker Compose já esta instalado
+	- O .NET 9 SDK já esta instalado
+	- O NVIDIA Docker já esta instalado e configurado.
+ 
+1 Que Utiliza as seguintes classes de modelo:	 
+	1.1 public class Assunto
+	{
+		public int Id { get; set; }
+		public string Nome { get; set; } = String.Empty;
+		public string Descricao { get; set; } = String.Empty;
+		public DateTime DataCriacao { get; set; }
+		public DateTime DataAtualizacao { get; set; }
+	}
+	1.2public class Movimentacao
+	{
+		public int Id { get; set; }
+		public string Nome { get; set; } = String.Empty;
+		public string Descricao { get; set; } = String.Empty;
+		public DateTime DataCriacao { get; set; }
+		public DateTime DataAtualizacao { get; set; }
+	}
+	1.3 public class TipoDocumento
+	{
+		public int Id { get; set; }
+		public string Nome { get; set; } = String.Empty;
+		public string Descricao { get; set; } = String.Empty;
+		public DateTime DataCriacao { get; set; }
+		public DateTime DataAtualizacao { get; set; }
+	}
 2 Com entity framework para o postgres 
-2.1 Crie um script .sh que permita criação de múltiplos databases no postgres sendo que cada database deve possuir credenciais individualizadas
-2.2 Este arquivo deve ser executada dentro do docker-compose apos subida do serviço do postgres
+	2.1 Crie um script create-databases.sh que permita criação de múltiplos databases no postgres sendo que cada database deve possuir credenciais individualizadas
+	2.2 Este arquivo deve ser executada dentro do docker-compose apos a subida do serviço do postgres
 3 Crie a classe  AppDbContext para os Dbset
-4 do tipo Minimal API com IDistributedCache, Repository e Service
-5 faça o mapeamento dos Endpoints para classes individuais fora do program.cs
+4 Do tipo Minimal API com IDistributedCache, Repository e Service
+5 Faça o mapeamento dos Endpoints para classes individuais fora do program.cs
 6 Inclua autenticação e autorização via keycloak protegendo as APis dos modelos
-7 Coloque cada classe em arquivo separado.
-8- Crie os serviços
-8.1 ollama com suporte a gpu nvidia
-8.1.1  É necessário baixar estes modelos no container do ollama
-8.1.1.1 ollama pull llama2
-8.1.1.2 ollama pull all-minilm
-8.1.1.3 ollama pull mxbai-embed-large
-8.2 Weaviate com ENABLE_MODULES: 'text2vec-ollama,generative-ollama' e  DEFAULT_VECTORIZER_MODULE: 'text2vec-ollama'
+7 Documente c
+7 Coloque cada classe em arquivos separados.
+8 Crie os serviços
+	8.1 ollama com suporte a gpu nvidia
+		8.1.1  É necessário baixar automaticamente estes modelos no container do ollama apos a subida do serviço
+			8.1.1.1 ollama pull llama2
+			8.1.1.2 ollama pull all-minilm
+			8.1.1.3 ollama pull mxbai-embed-large
+	8.2 Weaviate com ENABLE_MODULES: 'text2vec-ollama,generative-ollama' e  DEFAULT_VECTORIZER_MODULE: 'text2vec-ollama'
 9 Crie o realm do NetRedisASide2 para o keycloak
-9 Crie o docker-Compose do serviços e no serviço do keycloak
-9.1 Inclua no compose a importação do realm criado
-9.2 separe as credenciais dos serviços no arquivo .env
-10 Inclua a senha da conectionstrings do net no secrets
+10 Crie o docker-Compose do serviços e no serviço do keycloak
+	10.1 Inclua no compose a importação do realm criado
+	10.2 separe as credenciais dos serviços no arquivo .env
+11 Inclua a senha da conectionstrings do net no secrets
