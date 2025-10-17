@@ -1,0 +1,54 @@
+NetRedisASide3/
+├── NetRedisASide3.csproj
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+├── .env.example
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+│
+├── Models/
+│   ├── Assunto.cs
+│   ├── Movimentacao.cs
+│   └── TipoDocumento.cs
+│
+├── Data/
+│   └── AppDbContext.cs
+│
+├── Repositories/
+│   ├── IRepository.cs
+│   ├── AssuntoRepository.cs
+│   ├── MovimentacaoRepository.cs
+│   └── TipoDocumentoRepository.cs
+│
+├── Services/
+│   ├── AssuntoService.cs
+│   ├── MovimentacaoService.cs
+│   └── TipoDocumentoService.cs
+│
+├── Validators/
+│   ├── AssuntoValidator.cs
+│   ├── MovimentacaoValidator.cs
+│   └── TipoDocumentoValidator.cs
+│
+├── Endpoints/
+│   ├── AssuntoEndpoints.cs
+│   ├── MovimentacaoEndpoints.cs
+│   └── TipoDocumentoEndpoints.cs
+│
+├── Configuration/
+│   └── KeycloakSettings.cs
+│
+├── scripts/
+│   ├── create-databases.sh
+│   ├── import-keycloak-realm.sh
+│   └── download-ollama-models.sh
+│
+├── keycloak/
+│   └── realm-export.json
+│
+└── postman/
+    └── NetRedisASide3.postman_collection.json
+
+Vou criar cada arquivo agora...
