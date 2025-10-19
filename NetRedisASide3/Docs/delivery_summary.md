@@ -246,7 +246,7 @@ dotnet run
 
 ### Infraestrutura
 - **Containers Docker:** 6 serviços
-- **Databases:** 4 (3 da aplicação + 1 Keycloak)
+- **Databases:** 2 (1 da aplicação + 1 do Keycloak)
 - **Endpoints API:** 15 endpoints
 - **Pacotes NuGet:** 13 pacotes
 

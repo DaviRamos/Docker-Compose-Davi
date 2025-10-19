@@ -1,175 +1,5 @@
 # NetRedisASide3 - Setup Manual (Passo a Passo)
 
-## 📋 Comandos para Windows (PowerShell)
-
-### 1. Criar Estrutura de Pastas
-
-```powershell
-# Criar pasta raiz e navegar
-New-Item -ItemType Directory -Path "NetRedisASide3"
-Set-Location NetRedisASide3
-
-# Criar todas as pastas
-New-Item -ItemType Directory -Path "Models"
-New-Item -ItemType Directory -Path "Data"
-New-Item -ItemType Directory -Path "Repositories"
-New-Item -ItemType Directory -Path "Services"
-New-Item -ItemType Directory -Path "Validators"
-New-Item -ItemType Directory -Path "Endpoints"
-New-Item -ItemType Directory -Path "Configuration"
-New-Item -ItemType Directory -Path "scripts"
-New-Item -ItemType Directory -Path "keycloak"
-New-Item -ItemType Directory -Path "postman"
-New-Item -ItemType Directory -Path "wwwroot"
-
-Write-Host "✅ Estrutura de pastas criada!" -ForegroundColor Green
-```
-
-### 2. Criar Projeto .NET 9
-
-```powershell
-# Criar novo projeto Web API
-dotnet new web -n NetRedisASide3 -f net9.0
-
-# Inicializar Git
-git init
-git add .
-git commit -m "Initial commit"
-
-Write-Host "✅ Projeto .NET 9 criado!" -ForegroundColor Green
-```
-
-### 3. Instalar Pacotes NuGet
-
-```powershell
-# Entity Framework Core + PostgreSQL
-dotnet add package Microsoft.EntityFrameworkCore --version 9.0.0
-dotnet add package Microsoft.EntityFrameworkCore.Design --version 9.0.0
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 9.0.0
-
-# Redis
-dotnet add package Microsoft.Extensions.Caching.StackExchangeRedis --version 9.0.0
-dotnet add package StackExchange.Redis --version 2.8.16
-
-# Authentication
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.0
-
-# Validation
-dotnet add package FluentValidation --version 11.10.0
-dotnet add package FluentValidation.DependencyInjectionExtensions --version 11.10.0
-
-# Health Checks
-dotnet add package AspNetCore.HealthChecks.Redis --version 9.0.1
-dotnet add package AspNetCore.HealthChecks.Npgsql --version 9.0.1
-dotnet add package AspNetCore.HealthChecks.Uris --version 9.0.1
-
-# Swagger
-dotnet add package Swashbuckle.AspNetCore --version 7.2.0
-dotnet add package Microsoft.AspNetCore.OpenApi --version 9.0.0
-
-Write-Host "✅ Pacotes NuGet instalados!" -ForegroundColor Green
-```
-
-### 4. Criar Arquivo .gitignore
-
-```powershell
-@"
-## .NET
-bin/
-obj/
-*.user
-*.suo
-*.cache
-*.dll
-*.exe
-*.pdb
-
-## Visual Studio
-.vs/
-.vscode/
-*.csproj.user
-
-## Rider
-.idea/
-
-## Environment
-.env
-*.env.local
-.env.production
-
-## User Secrets
-secrets.json
-
-## Backups
-backups/
-*.bak
-
-## OS
-.DS_Store
-Thumbs.db
-
-## Logs
-logs/
-*.log
-"@ | Out-File -FilePath ".gitignore" -Encoding UTF8
-
-Write-Host "✅ Arquivo .gitignore criado!" -ForegroundColor Green
-```
-
-### 5. Criar Arquivo .env.example
-
-```powershell
-@"
-# PostgreSQL
-POSTGRES_ADMIN_USER=postgres
-POSTGRES_ADMIN_PASSWORD=postgres_admin_pass_2025
-
-# Databases
-ASSUNTO_DB_NAME=assuntos_db
-ASSUNTO_DB_USER=assunto_user
-ASSUNTO_DB_PASSWORD=assunto_pass_secure_2025
-
-MOVIMENTACAO_DB_NAME=movimentacoes_db
-MOVIMENTACAO_DB_USER=movimentacao_user
-MOVIMENTACAO_DB_PASSWORD=movimentacao_pass_secure_2025
-
-TIPODOCUMENTO_DB_NAME=tipos_documentos_db
-TIPODOCUMENTO_DB_USER=tipo_doc_user
-TIPODOCUMENTO_DB_PASSWORD=tipo_doc_pass_secure_2025
-
-# Redis
-REDIS_PASSWORD=redis_secure_pass_2025
-
-# Keycloak
-KEYCLOAK_ADMIN=admin
-KEYCLOAK_ADMIN_PASSWORD=admin_keycloak_pass_2025
-KEYCLOAK_CLIENT_SECRET=your-client-secret-here-change-me
-"@ | Out-File -FilePath ".env.example" -Encoding UTF8
-
-Write-Host "✅ Arquivo .env.example criado!" -ForegroundColor Green
-```
-
-### 6. Configurar User Secrets
-
-```powershell
-# Inicializar User Secrets
-dotnet user-secrets init
-
-# Adicionar connection strings
-dotnet user-secrets set "ConnectionStrings:AssuntoDb" "Host=localhost;Port=5432;Database=assuntos_db;Username=assunto_user;Password=assunto_pass_secure_2025"
-
-dotnet user-secrets set "ConnectionStrings:MovimentacaoDb" "Host=localhost;Port=5432;Database=movimentacoes_db;Username=movimentacao_user;Password=movimentacao_pass_secure_2025"
-
-dotnet user-secrets set "ConnectionStrings:TipoDocumentoDb" "Host=localhost;Port=5432;Database=tipos_documentos_db;Username=tipo_doc_user;Password=tipo_doc_pass_secure_2025"
-
-# Verificar secrets
-dotnet user-secrets list
-
-Write-Host "✅ User Secrets configurados!" -ForegroundColor Green
-```
-
----
-
 ## 📋 Comandos para Linux/MacOS (Bash)
 
 ### 1. Criar Estrutura de Pastas
@@ -510,24 +340,24 @@ dotnet user-secrets list
 
 Marque cada item conforme completar:
 
-- [ ] ✅ Estrutura de pastas criada
-- [ ] ✅ Projeto .NET 9 criado
-- [ ] ✅ Pacotes NuGet instalados
-- [ ] ✅ .gitignore criado
-- [ ] ✅ .env.example criado
-- [ ] ✅ User Secrets configurados
-- [ ] ✅ Arquivos de código copiados (Models, Repositories, etc.)
-- [ ] ✅ Program.cs criado
-- [ ] ✅ docker-compose.yml criado
-- [ ] ✅ Dockerfile criado
-- [ ] ✅ Scripts shell criados
-- [ ] ✅ realm-export.json criado
-- [ ] ✅ Collection Postman criada
-- [ ] ✅ .env configurado
-- [ ] ✅ Docker Compose rodando
-- [ ] ✅ Migrations aplicadas
-- [ ] ✅ Aplicação executando
-- [ ] ✅ Swagger acessível
+- [x] ✅ Estrutura de pastas criada
+- [x] ✅ Projeto .NET 9 criado
+- [x] ✅ Pacotes NuGet instalados
+- [x] ✅ .gitignore criado
+- [x] ✅ .env.example criado
+- [x] ✅ User Secrets configurados
+- [X] ✅ Arquivos de código copiados (Models, Repositories, etc.)
+- [X] ✅ Program.cs criado
+- [X] ✅ docker-compose.yml criado
+- [X] ✅ Dockerfile criado
+- [X] ✅ Scripts shell criados
+- [X] ✅ realm-export.json criado
+- [X] ✅ Collection Postman criada
+- [X] ✅ .env configurado
+- [X] ✅ Docker Compose rodando
+- [X] ✅ Migrations aplicadas
+- [X] ✅ Aplicação executando
+- [x] ✅ Swagger acessível
 - [ ] ✅ Health checks passando
 - [ ] ✅ Postman testado
 
