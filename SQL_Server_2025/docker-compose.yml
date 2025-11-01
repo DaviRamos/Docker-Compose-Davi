@@ -1,0 +1,149 @@
+name: SqlServer-Service   
+
+networks:
+  local-network:
+    external: true
+
+volumes:
+  sqlvol:
+    name: sql-vol
+  data:
+    name: sql-data
+  log:
+    name: sql-log
+  secrets:
+    name: sql-secrets
+  backups:
+    name: sql-backups
+  scripts:
+    name: sql-scripts
+  certs:
+    name: sql-certs
+  keys:
+    name: sql-keys
+  tempdb:
+    name: sql-tempdb
+  config:
+    name: sql-config
+
+# This is a Docker Compose file for running a Microsoft SQL Server container.
+# This file defines the services, networks, and volumes required to run the SQL Server container.
+# It includes environment variables for configuration, health checks, and volume mounts for data persistence.
+# The SQL Server container is configured to run with a specific SA password, accept the EULA, and enable the SQL Agent.
+# The container is set to restart always, and it uses a custom network for communication.
+# The health check ensures that the SQL Server is running and accessible.
+# The volumes are used to persist data, logs, secrets, backups, scripts, certificates, keys, tempdb, and configuration files.
+# The container is also configured with resource limits and reservations for CPU and memory.
+# The cpuset option is used to specify which CPU cores the container can use.
+# The file also includes commented-out sections for custom configurations, such as custom initialization scripts, certificates, and keys.
+# Uncomment the relevant sections if you want to use custom configurations.
+# The file is designed to be used with Docker Compose, allowing for easy deployment and management of the SQL Server container.
+# This Docker Compose file is designed to run a Microsoft SQL Server container with various configurations and options.
+# It includes settings for environment variables, health checks, volume mounts, and resource limits.
+# The SQL Server container is set to run with the Developer edition, which is suitable for development and testing purposes.
+# The container is configured to restart automatically, and it uses a custom network for communication.
+# The volumes are used to persist data, logs, secrets, backups, scripts, certificates, keys, tempdb, and configuration files.   
+
+services:
+  sql:
+    image: "mcr.microsoft.com/mssql/server:2025-latest"
+    container_name: SqlServer-container
+    restart: always
+    user: root
+    hostname: sql-server
+    working_dir: /var/opt/mssql
+    environment:      
+      #SA_PASSWORD: ${SA_PASSWORD:-SqlServer@123} # Default password, can be overridden by environment variable
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:-SqlServer@123} # Default password, can be overridden by environment variable
+      MSSQL_PID:  ${MSSQL_PID:-Developer} # Edition of SQL Server, can be changed to Express, Standard, or Enterprise
+      MSSQL_AGENT_ENABLED: ${MSSQL_AGENT_ENABLED:-true} # Enable SQL Server Agent
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048} # Memory limit for SQL Server in MB
+      MSSQL_TCP_PORT: ${MSSQL_TCP_PORT:-1433} # Default port for SQL Server
+      ACCEPT_EULA:  ${ACCEPT_EULA:-Y} # Accept the SQL Server EULA, can be overridden by environment variable
+      # Uncomment the following line if you want to use a custom SA password
+      # Uncomment the following line if you want to use a custom collation
+      # MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS" # Default collation, can be changed to a custom collation
+      # Uncomment the following line if you want to use a custom collation
+      #
+      #
+      # MSSQL_COLLATION: "Latin1_General_100_CI_AS" # Example of a custom collation
+      # Uncomment the following line if you want to use a custom collation
+      # MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS" # Example of a custom collation  
+      MSSQL_COLLATION: "SQL_Latin1_General_CP1_CI_AS"    
+    command: /opt/mssql/bin/sqlservr
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    init: true
+    volumes: 
+      - data:/var/opt/mssql/data
+      - log:/var/opt/mssql/log
+      - secrets:/var/opt/mssql/secrets   
+      - backups:/var/backups
+      - scripts:/var/opt/mssql/scripts
+      - certs:/var/opt/mssql/certs
+      - keys:/var/opt/mssql/keys
+      - tempdb:/var/opt/mssql/tempdb
+      - config:/var/opt/mssql/config
+      - sqlvol:/var/opt/mssql
+      #- ./init-scripts:/docker-entrypoint-initdb.d   
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
+      # Uncomment the following line if you want to use a custom initialization script
+      # volumes:
+      #   - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Uncomment the following line if you want to use a custom certificate
+      # volumes:
+      #   - ./certs:/var/opt/mssql/certs:ro
+      # Uncomment the following line if you want to use a custom key
+      # volumes:
+      #   - ./keys:/var/opt/mssql/keys:ro
+      # Uncomment the following line if you want to use a custom data directory
+      # volumes:
+      #   - ./data:/var/opt/mssql/data:rw
+      # Uncomment the following line if you want to use a custom log directory
+      # volumes:
+      #   - ./logs:/var/opt/mssql/log:rw
+      # Uncomment the following line if you want to use a custom backup directory
+      # volumes:
+      #   - ./backups:/var/opt/mssql/backups:rw
+      # Uncomment the following line if you want to use a custom tempdb directory
+      # volumes:
+      #   - ./tempdb:/var/opt/mssql/tempdb:rw
+      # Uncomment the following line if you want to use a custom secrets directory
+      # volumes:
+      #   - ./secrets:/var/opt/mssql/secrets:ro
+      # Uncomment the following line if you want to use a custom scripts directory
+      # volumes:
+      #   - ./scripts:/var/opt/mssql/scripts:ro
+      # Uncomment the following line if you want to use a custom configuration file
+      # volumes:
+      #   - ./mssql.conf:/var/opt/mssql/mssql.conf:ro
+    ports:
+      - "1433:1433"
+    networks:
+     - local-network    
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-S", "localhost", "-U", "sa", "-P", "SqlServer@123", "-Q", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s  
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 2G
+        reservations:
+          cpus: '0.50'
+          memory: 1G
+    cpuset: '0,1'
+    # Uncomment the following line if you want to set a specific CPU core for the container
+    # cpuset: '0'
+    # Uncomment the following line if you want to set a specific memory limit for the container
+    # mem_limit: 2g
+    # Uncomment the following line if you want to set a specific CPU limit for the container
+    # cpu_limit: 1.0

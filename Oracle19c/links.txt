@@ -1,6 +1,0 @@
-https://www.profissionaloracle.com.br/2022/04/30/instalando-o-oracle-19c-em-um-container-docker/
-https://www.oracle.com/br/technical-resources/articles/database-performance/oracle-db19c-com-docker.html
-https://vhspiceros.medium.com/install-oracle-19c-in-local-with-docker-60effd7ddabd
-https://dev.to/udara_dananjaya/running-oracle-19c-database-with-docker-1akg
-https://collabnix.com/how-to-run-oracle-database-in-a-docker-container-using-docker-compose/
-https://github.com/steveswinsburg/oracle19c-docker
