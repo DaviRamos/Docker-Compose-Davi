@@ -13,10 +13,10 @@ volumes:
 services:
   postgres-service:
     image: postgres:16-alpine
-    container_name: postgres-n8n-container
+    container_name: postgres-n8n-service-container
     hostname: postgres    
     restart: unless-stopped
-    command: postgres -c shared_buffers=256MB -c work_mem=16MB -c maintenance_work_mem=128MB -c effective_cache_size=512MB -c max_connections=100
+   # command: postgres -c shared_buffers=256MB -c work_mem=16MB -c maintenance_work_mem=128MB -c effective_cache_size=512MB -c max_connections=100
     environment:
        POSTGRES_USER: ${POSTGRES_USER}
        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -39,26 +39,26 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: '1.00'
           memory: 256M
         reservations:
-          cpus: '0.25'
+          cpus: '0.50'
           memory: 128M
     networks:
       - n8n-network
 
   n8n-service:
-    image: docker.n8n.io/n8nio/n8n:latest
-    container_name: n8n-container
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n-service-container
     restart: always 
     ports:
       - "5678:5678"
     environment:
-      N8N_HOST: ${N8N_PROTOCOL}
+      N8N_HOST: ${N8N_HOST}
       N8N_PORT: ${N8N_PORT}
       N8N_PROTOCOL: ${N8N_PROTOCOL}
       NODE_ENV: ${NODE_ENV}
-      WEBHOOK_URL: http://localhost:5678/
+      WEBHOOK_URL: ${WEBHOOK_URL}      
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
       TZ: ${TZ}
       DB_TYPE: ${DB_TYPE}
@@ -67,6 +67,7 @@ services:
       DB_POSTGRESDB_PORT: ${DB_POSTGRESDB_PORT}
       DB_POSTGRESDB_USER: ${DB_POSTGRESDB_USER}
       DB_POSTGRESDB_PASSWORD: ${DB_POSTGRESDB_PASSWORD}
+      DB_POSTGRESDB_SCHEMA: ${DB_POSTGRESDB_SCHEMA}
     volumes:      
       - n8n_data:/home/node/.n8n
     depends_on:
@@ -76,9 +77,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: '1.00'
           memory: 256M
         reservations:
-          cpus: '0.25'
+          cpus: '0.50'
           memory: 128M    
      

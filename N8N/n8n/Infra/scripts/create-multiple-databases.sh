@@ -21,8 +21,8 @@ if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
     echo "Multiple databases created"
 fi
 
-# Create openwebui database if it doesn't exist in the list
-if [[ ! "$POSTGRES_MULTIPLE_DATABASES" =~ "openwebui" ]]; then
-    create_user_and_database "openwebui"
-    echo "OpenWebUI database created"
+# Create n8n database if it doesn't exist in the list
+if [[ ! "$POSTGRES_MULTIPLE_DATABASES" =~ "n8n" ]]; then
+    create_user_and_database "n8n"
+    echo "N8N database created"
 fi

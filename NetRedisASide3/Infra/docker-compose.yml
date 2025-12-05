@@ -4,6 +4,7 @@ volumes:
   postgres_data:
   redis_data:
   keycloak_data:
+  openwebui_data:
   ollama_data:
   weaviate_data:
 
@@ -100,14 +101,14 @@ services:
       timeout: 10s
       retries: 5
       start_period: 2m
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          cpus: '0.30'
-          memory: 128M   
+    #deploy:
+      #resources:
+        #limits:
+          #cpus: '0.50'
+          #memory: 512M
+        #reservations:
+          #cpus: '0.30'
+          #memory: 128M   
     networks:
       - netredisaside3-network
 
@@ -156,17 +157,70 @@ services:
       -c "
       echo 'Aguardando Ollama estar pronto...' &&
       sleep 30 &&
-      echo 'Baixando modelo llama2...' &&
-      ollama pull llama2 &&
+      echo 'Baixando modelo llama3.2:3b...' &&
+      ollama pull llama3.2:3b &&
       echo 'Baixando modelo all-minilm...' &&
       ollama pull all-minilm &&      
-      echo 'Baixando modelo mxbai-embed-large...' &&
-      ollama pull mxbai-embed-large &&
+      echo 'Baixando modelo mxbai-embed-large:latest...' &&
+      ollama pull mxbai-embed-large:latest &&      
+      echo 'Baixando modelo gpt-oss:20b...' &&
+      ollama pull gpt-oss:20b &&
+      echo 'Baixando modelo phi3:3.8b...' &&
+      ollama pull phi3:3.8b &&
+      echo 'Baixando modelo deepseek-r1:8b...' &&
+      ollama pull deepseek-r1:8b &&
       echo 'Modelos baixados com sucesso!' &&
       exit 0
       "
     environment:
       - OLLAMA_HOST=http://ollama:11434
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    restart: unless-stopped
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/openwebui      
+     # - PORT=${OPENWEBUI_PORT}   
+      - OPENWEBUI_ADMIN_PASSWORD=${OPENWEBUI_ADMIN_PASSWORD}
+      - OPENWEBUI_ADMIN_USERNAME=${OPENWEBUI_ADMIN_USERNAME}               
+      - DEFAULT_USER_EMAIL=${DEFAULT_USER_EMAIL}    
+      - DEFAULT_USER_PASSWORD=${DEFAULT_USER_PASSWORD}
+      - DEFAULT_USER_FIRST_NAME=${DEFAULT_USER_FIRST_NAME}
+      - DEFAULT_USER_LAST_NAME=${DEFAULT_USER_LAST_NAME}
+      - DEFAULT_USER_ROLE=${DEFAULT_USER_ROLE}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - WEBUI_SECRET_KEY:${WEBUI_SECRET_KEY}  
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - openwebui_data:/app/backend/data
+    ports:
+      - "3000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - netredisaside3-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    #deploy:
+      #resources:
+        #limits:
+          #cpus: '1.00'
+          #memory: 256M
+        #reservations:
+          #cpus: '2.00'
+          #memory: 128M
+
+
 
   # Weaviate Vector Database
   weaviate:
@@ -175,7 +229,7 @@ services:
     hostname: weaviate
     command: ["--host", "0.0.0.0", "--port", "8081","--scheme", "http"] 
     ports:
-      - "8081:8080"  # REST calls
+      - "8081:8081"  # REST calls
       - "50051:50051"  # gRPC calls
     environment:
       QUERY_DEFAULTS_LIMIT: 25
@@ -192,7 +246,7 @@ services:
     depends_on:
       - ollama 
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/.well-known/ready || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/v1/.well-known/ready || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
