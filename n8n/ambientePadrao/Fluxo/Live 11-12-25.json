@@ -1,0 +1,732 @@
+{
+  "name": "Live 11-12-25",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        3920,
+        864
+      ],
+      "id": "5e5ad288-dc89-471e-a259-e0987c53a85b",
+      "name": "Telegram Trigger",
+      "webhookId": "1971fe57-d4e6-4873-9f51-3cc3094e7de5",
+      "credentials": {
+        "telegramApi": {
+          "id": "wweDVLYBpItFaMRl",
+          "name": "Tera Class"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "671a6705-4d6b-4cfc-b89f-c6b1060d6b2f",
+              "leftValue": "={{ $json.message.from.is_bot }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        4144,
+        864
+      ],
+      "id": "ee28a05b-e273-4166-90b4-4feca7c266ea",
+      "name": "Exclui mensagens de Bot"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Rq40YFslREHqwbli",
+          "mode": "list",
+          "cachedResultName": "TeraClass_users",
+          "cachedResultUrl": "/projects/JkSxoZiZc6DUO7hu/datatables/Rq40YFslREHqwbli"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "client_id",
+              "keyValue": "={{ $json.message.from.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "active": true,
+            "Nome": "={{ $json.message.from.first_name }}",
+            "Sobrenome": "={{ $json.message.from.last_name }}",
+            "client_id": "={{ $json.message.from.id }}",
+            "last_contact": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sobrenome",
+              "displayName": "Sobrenome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "client_id",
+              "displayName": "client_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_contact",
+              "displayName": "last_contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        4416,
+        864
+      ],
+      "id": "740573b6-4d4a-4733-9e25-7dce4b7706ef",
+      "name": "Upsert cliente",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e25d4d2d-1fe8-4fd8-a824-0d3e062777d4",
+              "name": "Nome",
+              "value": "={{ $('Upsert cliente').first().json.Nome }}",
+              "type": "string"
+            },
+            {
+              "id": "d7c5dd33-ce39-4ca0-be3d-06df33abfa03",
+              "name": "Sobrenome",
+              "value": "={{ $('Upsert cliente').first().json.Sobrenome }}",
+              "type": "string"
+            },
+            {
+              "id": "8917068a-2dbf-43f9-8e6f-21005b960b00",
+              "name": "client_id",
+              "value": "={{ $('Upsert cliente').first().json.client_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1018a35-1a48-4955-8ef8-ef0630de4711",
+              "name": "summary",
+              "value": "={{ $('Upsert cliente').first().json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "1b079dfd-7e8c-4044-9516-a1b394c51daf",
+              "name": "id",
+              "value": "={{ $('Upsert cliente').first().json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "4d2a2563-81eb-4748-89e8-52d42237296b",
+              "name": "message.text",
+              "value": "={{ $('Telegram Trigger').last().json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "sessionId",
+              "value": "={{ $('Upsert cliente').first().json.client_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4672,
+        864
+      ],
+      "id": "075562fa-829d-4fda-a215-2b414a452daa",
+      "name": "Prepara AI"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é um assistente de atendimento da Churrascaria Premium.\n\nINFORMAÇÕES DO RESTAURANTE:\n- Nome: Churrascaria Premium\n- Localização: Avenida Paulista, 1000 - São Paulo, SP\n- Horário de Funcionamento: Segunda a Sábado: 11h às 23h | Domingo: 11h às 22h\n- Promoções Atuais:\n  * Rodízio Completo: R$ 89,90 (Segunda a Quinta)\n  * Rodízio Premium: R$ 119,90 (Sexta a Domingo)\n  * Almoço Executivo: R$ 49,90 (Segunda a Sexta, 11h às 15h)\n  * Aniversariantes do mês: 50% de desconto (apresentar documento)\n\nSEU PAPEL:\n- Responda perguntas sobre localização, horários, cardápio e promoções\n- Seja cordial, prestativo e profissional\n- Ajude com reservas e informações gerais\n\nCONTEXTO DO CLIENTE:\nNome: {{ $json.Nome }}\nSobrenome: {{ $json.Sobrenome }}\nID: {{ $json.client_id }}\nResumo de conversas anteriores: {{ $json.summary || \"Primeira interação\" }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5120,
+        864
+      ],
+      "id": "25061a74-3200-4fb5-8fe9-34fe8a76b98f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "c1909158-9f3e-4e8b-9e6f-32ac6e9ad5e5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4960,
+        1088
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "zASYTOXYMGOTwGYW",
+          "name": "Ai s'cool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "a131581b-3b5e-45ab-8901-c68c2bb13677",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        5088,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"conversation_summary\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Resumo completo da conversa atual, incluindo principais tópicos discutidos, perguntas feitas e informações fornecidas\"\n\t\t},\n\t\t\"response\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Mensagem de resposta completa para enviar ao cliente via Telegram\"\n\t\t}\n\t}\n}"
+      },
+      "id": "54cad36f-f218-4b58-94bf-3093ba8e7c90",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        5408,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "client_id",
+              "value": "={{ $('Prepara AI').item.json.client_id }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "id",
+              "value": "={{ $('Prepara AI').item.json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "id-3",
+              "name": "summary",
+              "value": "={{ $json.output.conversation_summary }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "response",
+              "value": "={{ $('AI Agent').item.json.output.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d61af5b0-38ac-448a-9c91-ee538a40034a",
+      "name": "Prepara Resumo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5680,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Rq40YFslREHqwbli",
+          "cachedResultName": "TeraClass_users",
+          "cachedResultUrl": "/projects/JkSxoZiZc6DUO7hu/datatables/Rq40YFslREHqwbli"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "summary": "={{ $json.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Sobrenome",
+              "displayName": "Sobrenome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "client_id",
+              "displayName": "client_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_contact",
+              "displayName": "last_contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "155ff785-b67d-44c6-b2b5-d8a108526685",
+      "name": "Atualiza Resumo",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        5872,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Prepara AI').item.json.client_id }}",
+        "text": "={{ $('Prepara Resumo').item.json.response }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3da1b3c6-3c42-4b65-ac6f-65eb2f62fac7",
+      "name": "Envia Resposta Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        6304,
+        864
+      ],
+      "webhookId": "b786bb3a-4ac5-4de5-accf-820dd37b4c46",
+      "credentials": {
+        "telegramApi": {
+          "id": "wweDVLYBpItFaMRl",
+          "name": "Tera Class"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Gatilho\nRecene telegram\nFiltra mensagens do bot",
+        "height": 432,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3824,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "21d385ec-b69e-4037-8543-2287ed155fca",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Database\n- Checa se o usuário existe\n- Se não, cria\n- Se sim, atualiza",
+        "height": 432,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4352,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "6d2bfc61-a4a3-498a-8c1f-2806764e4cf8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# AI\n1. Recebe dados\n2. Processa com prompt\n3. Gera Json\n4. Envia resposta",
+        "height": 608,
+        "width": 672,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4880,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "d59700bb-5d9d-479d-a9e9-8f76f10a73f8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Atualiza dados\n- Pega resumo",
+        "height": 432,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5568,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "26b03639-2852-44fc-93c8-0d9351bb3e71",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# Envia mensagem",
+        "height": 432,
+        "width": 512,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6096,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "2b8c83df-0d6b-4575-9f32-2872ac7fb147",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        5280,
+        1088
+      ],
+      "id": "c2028523-ac55-4364-a6d7-6c38e17210a5",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "content": "# Workflow da Live de 11.12.2025\n![Tera](https://www.cartacapital.com.br/cupons/img/lojas/logo/somos-tera.png)\n\n## Professor\nMario Campello\nhttps://linkedin.com/in/mcampello",
+        "height": 736,
+        "width": 352,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3440,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "dac9aee0-6fa1-4cbc-958c-cf7e8a58b91d",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 293500806,
+          "message": {
+            "message_id": 2,
+            "from": {
+              "id": 1502987826,
+              "is_bot": false,
+              "first_name": "Codenuts",
+              "last_name": "Nocode",
+              "username": "codenuts",
+              "language_code": "pt-br"
+            },
+            "chat": {
+              "id": 1502987826,
+              "first_name": "Codenuts",
+              "last_name": "Nocode",
+              "username": "codenuts",
+              "type": "private"
+            },
+            "date": 1765470473,
+            "text": "Oie"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Exclui mensagens de Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exclui mensagens de Bot": {
+      "main": [
+        [
+          {
+            "node": "Upsert cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert cliente": {
+      "main": [
+        [
+          {
+            "node": "Prepara AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara AI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepara Resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara Resumo": {
+      "main": [
+        [
+          {
+            "node": "Atualiza Resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualiza Resumo": {
+      "main": [
+        [
+          {
+            "node": "Envia Resposta Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c39901f3-f34d-4e57-bdc5-e279fc9dde7d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0b1df9e06355d5e4d22c5652f76d3a97a0c59eb94b8b4cc53df0595f0e496d78"
+  },
+  "id": "RSed7RmtLw3SzaPp",
+  "tags": []
+}

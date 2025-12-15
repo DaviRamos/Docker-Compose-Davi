@@ -52,7 +52,7 @@ services:
     container_name: n8n-service-container
     restart: always 
     ports:
-      - "5678:5678"
+      - "127.0.0.1:5678:5678"
     environment:
       N8N_HOST: ${N8N_HOST}
       N8N_PORT: ${N8N_PORT}
@@ -81,5 +81,16 @@ services:
           memory: 256M
         reservations:
           cpus: '0.50'
-          memory: 128M    
+          memory: 128M  
+          
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    depends_on:
+      - n8n
+    env_file:
+      - .env
+    command: http --url=n8n:5678 # Tunnels traffic to the 'n8n' service on port 5678
+    ports:
+      - "4040:4040" # ngrok web UI for inspecting traffic  
      
